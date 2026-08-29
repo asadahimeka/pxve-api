@@ -1,4 +1,4 @@
-import { translate as msTranslate } from 'microsoft-translate-api'
+import { translate as msTranslate } from 'bing-translate-api'
 import { translate as ggTranslate } from 'google-translate-api-x'
 import { translate as ydTranslate } from '../youdao.ts'
 import { SILICONClOUD_APT_KEY } from '@lib/const.ts'
@@ -25,7 +25,7 @@ const srvDefMap = (to: string, aiModel: string) =>
   ({
     ms: async (text: string) => {
       const resp = await msTranslate(text, null, to || 'zh-Hans', { translateOptions: { textType: 'html' } })
-      return resp?.[0]?.translations?.[0]?.text
+      return resp?.translation
     },
     gg: async (text: string) => {
       const resp = await ggTranslate(text, { from: 'auto', to: to || 'zh-CN' })
@@ -121,8 +121,8 @@ function replaceNovelMark(text: string) {
 }
 
 const aiModelMap: Record<string, string> = {
-  glm: 'THUDM/glm-4-9b-chat',
-  qwen: 'Qwen/Qwen2-7B-Instruct',
+  glm: 'THUDM/GLM-Z1-9B-0414',
+  qwen: 'Qwen/Qwen2.5-7B-Instruct'
 }
 async function siliconCloudTranslate(text: string, aiModel: string) {
   aiModel = aiModel || 'glm'

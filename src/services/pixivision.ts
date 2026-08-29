@@ -189,6 +189,7 @@ export async function fetchPixivisionDetailContent(query: Record<string, any>) {
     url: `https://www.pixivision.net/${getLang(lang)}/a/${id}`,
     method: 'GET',
     headers: {
+      'accept-language': lang,
       ...UA_HEADER,
     },
   }
@@ -198,9 +199,14 @@ export async function fetchPixivisionDetailContent(query: Record<string, any>) {
   const data: any = {}
   const $ = load(await htmlResp.text())
 
+  $('a').removeAttr('target')
+
   data.title = $('.am__title').text()
   data.date = $('time._date').text()
-  data.content = $('.am__body').html()
+  data.content = $('.am__body')
+    .html()
+    ?.replace(/www.pixiv.net\/\w+\/artworks/g, 'www.pixiv.net/artworks')
+    ?.replace(/www.pixiv.net\/\w+\/users/g, 'www.pixiv.net/users')
 
   data.tags = $('._tag-list a')
     .map(function () {
