@@ -2,11 +2,10 @@ const SENSITIVE_KEYS = ['api_key', 'token', 'PHPSESSID', 'auth_token', 'ct0']
 
 export function sanitizeUrl(raw: string): string {
   try {
-    const u = new URL(raw)
-    // Check if any sensitive keys are present via URL API
-    const hasSensitive = SENSITIVE_KEYS.some((k) => u.searchParams.has(k))
-    if (!hasSensitive) return raw
-    // String-replace to avoid URL.toString() percent-encoding non-sensitive params
+    new URL(raw)
+    // Always apply case-insensitive regex replace — the regex already handles
+    // all case variants (gi flag). The old searchParams.has() guard was
+    // case-sensitive and caused uppercase variants like API_KEY to leak through.
     return raw.replace(
       new RegExp(`([?&](?:${SENSITIVE_KEYS.join('|')})=)[^&]*`, 'gi'),
       (_, prefix) => `${prefix}***`,
