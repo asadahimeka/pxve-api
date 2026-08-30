@@ -9,6 +9,8 @@ import { Scalar } from '@scalar/hono-api-reference'
 import { swaggerUI } from '@hono/swagger-ui'
 
 import { RequestDeduper } from '@lib/request-deduper.ts'
+import { toPublicError } from '@lib/sanitize.ts'
+import { optionalAuth } from './middlewares/optional-auth.ts'
 import { logger } from './middlewares/logger.ts'
 import { blocker, isAllowedOrigin } from './middlewares/blocker.ts'
 import { cache } from './middlewares/cache.ts'
@@ -17,6 +19,7 @@ import { routes } from './routes/index.ts'
 const app = new Hono()
 
 app.use(logger())
+app.use(optionalAuth())
 app.use(cors({ origin: (origin) => isAllowedOrigin(origin) ? origin : undefined, credentials: true }))
 app.use(secureHeaders({ crossOriginResourcePolicy: 'same-site' }))
 app.use(blocker())
@@ -79,10 +82,10 @@ app.get('/docs/hibiapi', Scalar({ url: '/openapi-hibiapi.json', theme: 'purple',
 app.get('/swagger', swaggerUI({ url: '/openapi.json' }))
 app.get('/swagger/hibiapi', swaggerUI({ url: '/openapi-hibiapi.json' }))
 
-app.notFound(c => c.json({ error: 'Not Found' }, 404))
+app.notFound((c) => c.json({ error: 'Not Found' }, 404))
 app.onError((err, c) => {
-  console.error('[ERROR]:', new Date().toLocaleString('zh'), c.req.method, c.req.url, err)
-  return c.json({ error: err?.message || 'Internal Server Error' }, 500)
+  const pub = toPublicError(err)
+  return c.json(pub, 500)
 })
 
 const deduper = new RequestDeduper()

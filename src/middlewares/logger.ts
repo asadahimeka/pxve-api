@@ -1,4 +1,5 @@
 import type { MiddlewareHandler } from 'hono'
+import { sanitizeUrl } from '@lib/sanitize.ts'
 
 export function logger(): MiddlewareHandler {
   return async (ctx, next) => {
@@ -11,7 +12,7 @@ export function logger(): MiddlewareHandler {
       ctx.req.method,
       ctx.res.status,
       time,
-      ctx.req.url.slice(0, 150),
+      sanitizeUrl(ctx.req.url).slice(0, 150),
       ctx.req.header('User-Agent'),
       ctx.req.header('Origin')
     )
