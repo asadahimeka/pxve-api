@@ -19,7 +19,7 @@ const SauceNAOResponseSchema = z.object({
         gelbooru_id: z.string(),
         pixiv_id: z.string(),
       }),
-    })
+    }),
   ),
 })
 
@@ -39,11 +39,17 @@ export const saucenaoRoute = new Hono()
       },
       responses: { 200: SauceNAOResponseSchema },
     }),
-    async c => {
+    async (c) => {
       const { url } = c.req.valid('query')
-      const resp = await saucenaoSearch(url)
-      return resp
-    }
+      try {
+        const resp = await saucenaoSearch(url)
+        return resp
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.startsWith('blocked')) return c.json({ error: msg }, 400)
+        return c.json({ error: 'Upstream fetch failed' }, 502)
+      }
+    },
   )
   .post(
     '/sauce/',
@@ -70,9 +76,9 @@ export const saucenaoRoute = new Hono()
     }),
     bodyLimit({
       maxSize: 5 * 1024 * 1024, // 5MB
-      onError: c => c.json({ error: 'File too large' }, 413),
+      onError: (c) => c.json({ error: 'File too large' }, 413),
     }),
-    async c => {
+    async (c) => {
       const reqBody = await c.req.parseBody()
       const file = reqBody.file
 
@@ -84,7 +90,13 @@ export const saucenaoRoute = new Hono()
         return c.json({ error: 'You need an Image' }, 400)
       }
 
-      const resp = await saucenaoSearch(file)
-      return resp
-    }
+      try {
+        const resp = await saucenaoSearch(file)
+        return resp
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.startsWith('blocked')) return c.json({ error: msg }, 400)
+        return c.json({ error: 'Upstream fetch failed' }, 502)
+      }
+    },
   )

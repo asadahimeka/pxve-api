@@ -1,5 +1,7 @@
 const DEDUPER_MAX = Number(Deno.env.get('DEDUPER_MAX') ?? 1000)
 
+import { sanitizeUrl } from '@lib/sanitize.ts'
+
 export class RequestDeduper {
   map: Map<string, Promise<Response>>
 
@@ -9,7 +11,7 @@ export class RequestDeduper {
 
   run(key: string, fn: (...args: any[]) => Response | Promise<Response>) {
     if (this.map.has(key)) {
-      return this.map.get(key)!.then(res => res.clone())
+      return this.map.get(key)!.then((res) => res.clone())
     }
 
     if (this.map.size >= DEDUPER_MAX) {
@@ -21,7 +23,7 @@ export class RequestDeduper {
         const res = await fn()
         return res
       } catch (err: any) {
-        console.error(new Date().toLocaleString('zh'), key, 'ERROR:', err)
+        console.error(new Date().toLocaleString('zh'), sanitizeUrl(key), 'ERROR:', err)
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
           status: 500,
           headers: { 'content-type': 'application/json' },

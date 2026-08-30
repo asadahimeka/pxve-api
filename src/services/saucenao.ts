@@ -1,4 +1,5 @@
 import { SAUCENAO_API_KEY, UA_HEADER } from '@lib/const.ts'
+import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
 export async function saucenaoSearch(file: string | Blob) {
   if (!SAUCENAO_API_KEY) throw new Error('SAUCENAO_API_KEY is not set')
@@ -11,7 +12,8 @@ export async function saucenaoSearch(file: string | Blob) {
   form.set('db', '999')
 
   if (typeof file == 'string') {
-    form.set('file', await fetch(file).then(r => r.blob()))
+    await assertSafeUrl(file)
+    form.set('file', await fetch(file).then((r) => r.blob()))
   } else {
     form.set('file', file)
   }

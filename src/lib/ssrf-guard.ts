@@ -1,14 +1,20 @@
 const PRIVATE_RE = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.|127\.|0\.0\.0\.0|169\.254\.)/
 
+const METADATA_HOSTS = ['169.254.169.254', 'metadata.google.internal', '100.100.100.200']
+
+const DNS_CACHE_TTL_MS = 60_000
+const DNS_TIMEOUT_MS = 2_000
+
+/** DNS resolution cache: hostname → { ips: string[], expiresAt: number } */
+const dnsCache = new Map<string, { ips: string[]; expiresAt: number }>()
+
 /**
  * Check if a hostname (possibly bracketed IPv6 like "[::1]") is a private/reserved address.
  * Handles IPv4 private ranges, IPv6 loopback/unique-local/link-local, and IPv4-mapped IPv6.
  */
 function isPrivateHost(hostname: string): boolean {
   // Strip brackets from IPv6 hostnames (Deno includes them in hostname)
-  const h = hostname.startsWith('[') && hostname.endsWith(']')
-    ? hostname.slice(1, -1)
-    : hostname
+  const h = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname
 
   // IPv4 private ranges (existing)
   if (PRIVATE_RE.test(h)) return true
@@ -51,7 +57,69 @@ function isPrivateHost(hostname: string): boolean {
   return false
 }
 
-// deno-lint-ignore require-await
+/** Check if an IP address string is private/reserved. */
+function isPrivateIp(ip: string): boolean {
+  if (PRIVATE_RE.test(ip)) return true
+  if (METADATA_HOSTS.includes(ip)) return true
+
+  // IPv6 private checks
+  if (ip.includes(':')) {
+    if (ip === '::1' || ip === '::') return true
+    if (/^fd/i.test(ip) || /^fc/i.test(ip)) return true
+    if (/^fe[89ab]/i.test(ip)) return true
+  }
+
+  return false
+}
+
+/**
+ * Check whether a hostname is a literal IP (no DNS resolution needed).
+ * Covers IPv4 dotted-quad and bracketed IPv6.
+ */
+function isLiteralIp(hostname: string): boolean {
+  const h = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname
+  // IPv4: four decimal groups
+  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) return true
+  // IPv6: contains colon
+  if (h.includes(':')) return true
+  return false
+}
+
+/**
+ * Resolve a hostname via DNS (A + AAAA) with timeout and cache.
+ * Returns array of resolved IP strings. Throws on failure (block-on-error).
+ */
+async function resolveAndCheck(hostname: string): Promise<string[]> {
+  const now = Date.now()
+  const cached = dnsCache.get(hostname)
+  if (cached && now < cached.expiresAt) {
+    return cached.ips
+  }
+
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), DNS_TIMEOUT_MS)
+
+  try {
+    const [aRecords, aaaaRecords] = await Promise.all([
+      Deno.resolveDns(hostname, 'A', { signal: controller.signal }).catch(() => [] as string[]),
+      Deno.resolveDns(hostname, 'AAAA', { signal: controller.signal }).catch(() => [] as string[]),
+    ])
+    const ips = [...aRecords, ...aaaaRecords]
+    if (ips.length === 0) {
+      throw new Error(`DNS resolution returned no records: ${hostname}`)
+    }
+    dnsCache.set(hostname, { ips, expiresAt: now + DNS_CACHE_TTL_MS })
+    return ips
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(`DNS resolution timed out: ${hostname}`)
+    }
+    throw err
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 export async function assertSafeUrl(
   input: string,
   opts?: { allowPrivate?: boolean },
@@ -63,11 +131,7 @@ export async function assertSafeUrl(
   if (!opts?.allowPrivate && isPrivateHost(u.hostname)) {
     throw new Error(`blocked private: ${u.hostname}`)
   }
-  if (
-    ['169.254.169.254', 'metadata.google.internal', '100.100.100.200'].includes(
-      u.hostname,
-    )
-  ) {
+  if (METADATA_HOSTS.includes(u.hostname)) {
     throw new Error('blocked metadata')
   }
   const allow = Deno.env
@@ -89,5 +153,18 @@ export async function assertSafeUrl(
   ) {
     throw new Error(`blocked domain: ${u.hostname}`)
   }
+
+  // DNS resolution check for non-literal-IP hostnames (nip.io bypass prevention)
+  if (!isLiteralIp(u.hostname)) {
+    const resolvedIps = await resolveAndCheck(u.hostname)
+    if (!opts?.allowPrivate) {
+      for (const ip of resolvedIps) {
+        if (isPrivateIp(ip)) {
+          throw new Error(`blocked resolved private: ${ip} (via ${u.hostname})`)
+        }
+      }
+    }
+  }
+
   return u
 }
