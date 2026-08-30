@@ -22,6 +22,12 @@ Deno.test('block ipv6 loopback and private', async () => {
   await assertRejects(() => assertSafeUrl('http://[::ffff:192.168.1.1]/'))
   // ::ffff:10.0.0.1 IPv4-mapped private
   await assertRejects(() => assertSafeUrl('http://[::ffff:10.0.0.1]/'))
+  // ::ffff:0:192.168.1.1 → normalized [::ffff:0:c0a8:101] (leading-zero hextet bypass)
+  await assertRejects(() => assertSafeUrl('http://[::ffff:0:192.168.1.1]/'))
+  // ::ffff:0:0:192.168.1.1 → normalized [::ffff:0:0:c0a8:101] (two leading-zero hextets)
+  await assertRejects(() => assertSafeUrl('http://[::ffff:0:0:192.168.1.1]/'))
+  // ::c0a8:101 — legacy IPv4-compatible form (= ::192.168.1.1)
+  await assertRejects(() => assertSafeUrl('http://[::c0a8:101]/'))
 })
 
 Deno.test('ipv6 error messages contain hostname', async () => {

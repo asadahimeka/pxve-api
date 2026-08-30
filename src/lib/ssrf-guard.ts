@@ -29,10 +29,21 @@ function isPrivateHost(hostname: string): boolean {
 
   // ::ffff:0:0/96 — IPv4-mapped IPv6 addresses
   // Deno normalizes to ::ffff:<hex1>:<hex2> (e.g., ::ffff:c0a8:101 for 192.168.1.1)
-  const ffffMatch = h.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
+  // Tolerate leading-zero hextets: ::ffff:0:c0a8:101, ::ffff:0:0:c0a8:101, etc.
+  const ffffMatch = h.match(/^::ffff:(?:0+:)*([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
   if (ffffMatch) {
     const high = parseInt(ffffMatch[1], 16)
     const low = parseInt(ffffMatch[2], 16)
+    const ipv4 = `${(high >> 8) & 0xff}.${(high >> 0) & 0xff}.${(low >> 8) & 0xff}.${(low >> 0) & 0xff}`
+    return PRIVATE_RE.test(ipv4)
+  }
+
+  // Legacy IPv4-compatible IPv6: ::<hex1>:<hex2> (e.g., ::c0a8:101 = ::192.168.1.1)
+  // Treat same as IPv4-mapped — parse last two hextets as dotted-quad
+  const legacyMatch = h.match(/^::([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
+  if (legacyMatch) {
+    const high = parseInt(legacyMatch[1], 16)
+    const low = parseInt(legacyMatch[2], 16)
     const ipv4 = `${(high >> 8) & 0xff}.${(high >> 0) & 0xff}.${(low >> 8) & 0xff}.${(low >> 0) & 0xff}`
     return PRIVATE_RE.test(ipv4)
   }
