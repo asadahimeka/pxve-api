@@ -10,14 +10,14 @@ import { swaggerUI } from '@hono/swagger-ui'
 
 import { RequestDeduper } from '@lib/request-deduper.ts'
 import { logger } from './middlewares/logger.ts'
-import { blocker } from './middlewares/blocker.ts'
+import { blocker, isAllowedOrigin } from './middlewares/blocker.ts'
 import { cache } from './middlewares/cache.ts'
 import { routes } from './routes/index.ts'
 
 const app = new Hono()
 
 app.use(logger())
-app.use(cors())
+app.use(cors({ origin: (origin) => isAllowedOrigin(origin) ? origin : undefined, credentials: true }))
 app.use(secureHeaders({ crossOriginResourcePolicy: 'same-site' }))
 app.use(blocker())
 app.get('*', etag())

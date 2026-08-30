@@ -1,6 +1,27 @@
 import type { MiddlewareHandler } from 'hono'
 import { isbot } from 'isbot'
-import { ACCEPT_DOMAINS, UA_BLACKLIST } from '@lib/const.ts'
+import { UA_BLACKLIST } from '@lib/const.ts'
+
+/**
+ * Precise origin matching: exact hostname match or wildcard (*.domain) endsWith.
+ * Empty ACCEPT_DOMAINS falls back to allow-all with a warning.
+ */
+export function isAllowedOrigin(origin: string): boolean {
+  const raw = Deno.env.get('ACCEPT_DOMAINS') ?? ''
+  if (!raw.trim()) {
+    console.warn('[blocker] ACCEPT_DOMAINS empty, CORS allows *')
+    return true
+  }
+  const list = raw.split(',').map(s => s.trim()).filter(Boolean)
+  try {
+    const h = new URL(origin).hostname
+    return list.some(d =>
+      d.startsWith('*.') ? h === d.slice(2) || h.endsWith(d.slice(1)) : h === d
+    )
+  } catch {
+    return false
+  }
+}
 
 function isAccepted(path: string, ua?: string, origin?: string, referer?: string): boolean {
   if (path === '/favicon.ico' || path === '/robots.txt') return true
@@ -14,15 +35,8 @@ function isAccepted(path: string, ua?: string, origin?: string, referer?: string
     return false
   }
 
-  let originOk = false
-  if (!origin || !ACCEPT_DOMAINS.length || ACCEPT_DOMAINS.some(e => origin.includes(e))) {
-    originOk = true
-  }
-
-  let refererOk = false
-  if (!referer || !ACCEPT_DOMAINS.length || ACCEPT_DOMAINS.some(e => referer.includes(e))) {
-    refererOk = true
-  }
+  const originOk = !origin || isAllowedOrigin(origin)
+  const refererOk = !referer || isAllowedOrigin(referer)
 
   return originOk && refererOk
 }
