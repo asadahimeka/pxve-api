@@ -64,6 +64,9 @@ async function downloadAndUnzip(zipUrl: string, outputDir: string) {
   const zipPath = join(outputDir, 'ugoira.zip')
   await Deno.writeFile(zipPath, zipData)
 
+  // Validate zip entries before extraction to prevent path traversal attacks
+  await validateZipEntries(zipPath)
+
   let cmd = 'unzip'
   let args = ['-o', zipPath, '-d', outputDir]
   if (Deno.build.os === 'windows') {
@@ -79,6 +82,56 @@ async function downloadAndUnzip(zipUrl: string, outputDir: string) {
     const decoder = new TextDecoder()
     console.error('unzip failed:', decoder.decode(stderr))
     throw new Error('unzip failed')
+  }
+}
+
+/**
+ * List zip entries and validate each one is safe before extraction.
+ * Uses `zipinfo -1` on Unix or PowerShell list on Windows.
+ */
+async function validateZipEntries(zipPath: string) {
+  let cmd: string
+  let args: string[]
+
+  if (Deno.build.os === 'windows') {
+    cmd = 'PowerShell'
+    args = ['-NoProfile', '-Command', `(Get-Item "${zipPath}").FullName | ForEach-Object { [System.IO.Compression.ZipFile]::OpenRead($_).Entries.FullName }`]
+  } else {
+    cmd = 'zipinfo'
+    args = ['-1', zipPath]
+  }
+
+  const proc = new Deno.Command(cmd, { args, stdout: 'piped', stderr: 'piped' })
+  const { success, stdout, stderr } = await proc.output()
+  if (!success) {
+    // Fallback: try unzip -l on systems without zipinfo
+    const fallback = new Deno.Command('unzip', { args: ['-l', zipPath], stdout: 'piped', stderr: 'piped' })
+    const fb = await fallback.output()
+    if (!fb.success) {
+      throw new Error('Failed to list zip entries')
+    }
+    const decoder = new TextDecoder()
+    const lines = decoder.decode(fb.stdout).split('\n')
+    // unzip -l format: lines with entries are indented, skip headers/footers
+    for (const line of lines) {
+      const match = line.trim().split(/\s+/).pop()
+      if (match && !match.endsWith('/') && !match.startsWith('---')) {
+        checkEntry(match)
+      }
+    }
+    return
+  }
+
+  const decoder = new TextDecoder()
+  const entries = decoder.decode(stdout).split('\n').filter(e => e.trim())
+  for (const entry of entries) {
+    checkEntry(entry)
+  }
+}
+
+function checkEntry(entryName: string) {
+  if (!isSafeZipEntry(entryName)) {
+    throw new Error(`unsafe zip entry: ${entryName}`)
   }
 }
 
