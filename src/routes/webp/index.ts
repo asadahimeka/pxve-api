@@ -24,7 +24,15 @@ export const webpConvertRoute = new Hono().get(
     },
   }),
   async c => {
-    const { data, headers } = await convertWebP(c.req.url)
-    return c.body(data, 200, headers)
+    try {
+      const { data, headers } = await convertWebP(c.req.url)
+      return c.body(data, 200, headers)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.startsWith('blocked ')) {
+        return c.json({ error: msg }, 400)
+      }
+      return c.json({ error: 'WebP conversion error' }, 502)
+    }
   }
 )

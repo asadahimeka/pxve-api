@@ -27,9 +27,16 @@ export const aiImageDetectRoute = new Hono().get(
   async c => {
     const { url } = c.req.valid('query')
 
-    const resp = await illuminartyImageAnalysis(url)
-
-    if (resp.ok) c.header('Cache-Control', 'max-age=86400')
-    return c.body(resp.body!, resp)
+    try {
+      const resp = await illuminartyImageAnalysis(url)
+      if (resp.ok) c.header('Cache-Control', 'max-age=86400')
+      return c.body(resp.body!, resp)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.startsWith('blocked ')) {
+        return c.json({ error: msg }, 400)
+      }
+      return c.json({ error: 'Image analysis error' }, 502)
+    }
   }
 )
