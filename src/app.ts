@@ -31,6 +31,7 @@ if (!Deno.args.includes('--dev') && Deno.env.get('ENABLE_CACHE') == '1') {
       cacheControl: 'max-age=600',
       maxAge: 600 * 1000, // 10min
       maxSizeBytes: 1024 * 1024 * 1024, // 1024MB
+      maxEntries: Number(Deno.env.get('CACHE_MAX_ENTRIES') || '5000'),
       cleanupInterval: 5 * 60 * 1000, // 5min
     })
   )
