@@ -1,7 +1,18 @@
 import { join } from '@std/path'
 import { ensureDir } from '@std/fs'
 import { UA_HEADER } from '@lib/const.ts'
+import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 import { pixivWebApi } from '../pixiv/web-api.ts'
+
+export const UGOIRA_MAX_ZIP_BYTES = Number(Deno.env.get('UGOIRA_MAX_ZIP_BYTES') ?? 52428800)
+
+/**
+ * Validate that a zip entry name is safe (no path traversal).
+ * Blocks "..", absolute paths, Windows drive letters, and backslash separators.
+ */
+export function isSafeZipEntry(name: string): boolean {
+  return !name.includes('..') && !name.startsWith('/') && !name.includes(':') && !name.includes('\\')
+}
 
 export type UgoiraConvertExt = 'mp4' | 'gif' | 'apng' | 'webp' | 'webm' | 'avif'
 
@@ -36,13 +47,18 @@ async function getMetadata(id: number) {
 }
 
 async function downloadAndUnzip(zipUrl: string, outputDir: string) {
-  const response = await fetch(zipUrl, {
+  const safeUrl = await assertSafeUrl(zipUrl)
+  const response = await fetch(safeUrl, {
     headers: {
       Referer: 'https://www.pixiv.net/',
       ...UA_HEADER,
     },
+    signal: AbortSignal.timeout(30000),
   })
   const zipData = new Uint8Array(await response.arrayBuffer())
+  if (zipData.length > UGOIRA_MAX_ZIP_BYTES) {
+    throw new Error(`zip too large: ${zipData.length} bytes exceeds limit of ${UGOIRA_MAX_ZIP_BYTES}`)
+  }
 
   await ensureDir(outputDir)
   const zipPath = join(outputDir, 'ugoira.zip')
@@ -102,13 +118,16 @@ async function convertImages(imagesDir: string, outputFilePath: string, rate: st
 
 async function downloadAndConvert(zipUrl: string, rate: string, id: string, ext: UgoiraConvertExt = 'avif') {
   const tempDir = await Deno.makeTempDir()
-  const imagesDir = join(tempDir, `images_${id}`)
-  const outputFilePath = join(tempDir, `${id}.${ext}`)
+  try {
+    const imagesDir = join(tempDir, `images_${id}`)
+    const outputFilePath = join(tempDir, `${id}.${ext}`)
 
-  await downloadAndUnzip(zipUrl, imagesDir)
-  await convertImages(imagesDir, outputFilePath, rate, ext)
-  const data = await Deno.readFile(outputFilePath)
-  await Deno.remove(tempDir, { recursive: true })
+    await downloadAndUnzip(zipUrl, imagesDir)
+    await convertImages(imagesDir, outputFilePath, rate, ext)
+    const data = await Deno.readFile(outputFilePath)
 
-  return data
+    return data
+  } finally {
+    await Deno.remove(tempDir, { recursive: true }).catch(() => {})
+  }
 }

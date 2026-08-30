@@ -1,5 +1,6 @@
 import { assertEquals, assertRejects } from '@std/assert'
 import { convertUgoira, ugoiraExtRegex, ugoiraExts } from '../../src/services/ugoira.ts'
+import { isSafeZipEntry } from '../../src/services/worker/ugoira-worker.ts'
 
 Deno.test('ugoiraExtRegex validates correct formats', () => {
   // Valid formats
@@ -36,4 +37,14 @@ Deno.test('ugoira service - convertUgoira throws on missing ID', async () => {
     Error,
     'Invalid ugoira extension'
   )
+})
+
+Deno.test('isSafeZipEntry blocks path traversal', () => {
+  assertEquals(isSafeZipEntry('../etc/passwd'), false)
+  assertEquals(isSafeZipEntry('/absolute/path.jpg'), false)
+  assertEquals(isSafeZipEntry('images\\1.jpg'), false)
+  assertEquals(isSafeZipEntry('C:\\windows\\system32'), false)
+  assertEquals(isSafeZipEntry('images/1.jpg'), true)
+  assertEquals(isSafeZipEntry('frames/000123.jpg'), true)
+  assertEquals(isSafeZipEntry('simple.png'), true)
 })

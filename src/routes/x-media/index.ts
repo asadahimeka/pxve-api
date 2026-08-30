@@ -33,6 +33,16 @@ export const xMediaRoute = new Hono().get(
   }),
   async c => {
     const { userName, userId, nextCursor } = c.req.valid('query')
+
+    // Validate userName: alphanumeric + underscore, 1-15 chars
+    if (userName && !/^[A-Za-z0-9_]{1,15}$/.test(userName)) {
+      return c.json({ error: 'invalid userName' }, 400)
+    }
+    // Validate nextCursor: alphanumeric + underscore/hyphen, 1-64 chars
+    if (nextCursor && !/^[A-Za-z0-9_-]{1,64}$/.test(nextCursor)) {
+      return c.json({ error: 'invalid cursor' }, 400)
+    }
+
     const res = await runFetchXMediaCmd(userName, userId, nextCursor)
     return c.json(res, 200, { 'Cache-Control': 'public, max-age=86400' })
   }
