@@ -1,3 +1,5 @@
+const DEDUPER_MAX = Number(Deno.env.get('DEDUPER_MAX') ?? 1000)
+
 export class RequestDeduper {
   map: Map<string, Promise<Response>>
 
@@ -8,6 +10,10 @@ export class RequestDeduper {
   run(key: string, fn: (...args: any[]) => Response | Promise<Response>) {
     if (this.map.has(key)) {
       return this.map.get(key)!.then(res => res.clone())
+    }
+
+    if (this.map.size >= DEDUPER_MAX) {
+      throw new Error('Deduper queue full')
     }
 
     const p = (async () => {

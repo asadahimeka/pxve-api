@@ -1,5 +1,6 @@
 import type { Context, MiddlewareHandler } from 'hono'
 import type { StatusCode } from 'hono/utils/http-status'
+import { sanitizeUrl } from '@lib/sanitize.ts'
 
 /**
  * status codes that can be cached by default.
@@ -248,6 +249,7 @@ export const cache = (options: {
   cacheableStatusCodes?: StatusCode[]
   maxAge?: number
   maxSizeBytes?: number
+  maxEntries?: number
   cleanupInterval?: number
   shouldBypassCache?: (c: Context) => boolean | Promise<boolean>
 }): MiddlewareHandler => {
@@ -256,7 +258,7 @@ export const cache = (options: {
     return async (_c, next) => await next()
   }
 
-  const { maxAge, maxSizeBytes, cleanupInterval = 5 * 60 * 1000 } = options
+  const { maxAge, maxSizeBytes, maxEntries, cleanupInterval = 5 * 60 * 1000 } = options
 
   const cacheControlDirectives = options.cacheControl?.split(',').map(directive => directive.toLowerCase())
   const varyDirectives = Array.isArray(options.vary)
@@ -311,6 +313,10 @@ export const cache = (options: {
     if (options.keyGenerator) {
       key = await options.keyGenerator(c)
     }
+    // Sanitize sensitive query params and mask auth header presence
+    key = sanitizeUrl(key)
+    const hasAuth = Boolean(c.req.header('authorization') || c.req.header('x-auth'))
+    key = `${key}&auth=${hasAuth ? '1' : '0'}`
 
     const cacheName = typeof options.cacheName === 'function' ? await options.cacheName(c) : options.cacheName
     const cache = await caches.open(cacheName)
@@ -404,6 +410,29 @@ export const cache = (options: {
       expiresAt = now + headerMaxAge
     } else if (maxAge) {
       expiresAt = now + maxAge
+    }
+
+    // Enforce maxEntries limit before storing
+    if (maxEntries) {
+      const currentKeys = await getCacheKeys(metadataCache)
+      if (currentKeys && currentKeys.length >= maxEntries) {
+        // Evict oldest entry by lastAccessedAt
+        const entries: Array<{ key: string; lastAccessedAt: number }> = []
+        for (const k of currentKeys) {
+          const metaResp = await metadataCache.match(getMetadataKey(k))
+          if (metaResp) {
+            const meta = (await metaResp.json()) as CacheMetadata
+            entries.push({ key: meta.key, lastAccessedAt: meta.lastAccessedAt })
+          }
+        }
+        entries.sort((a, b) => a.lastAccessedAt - b.lastAccessedAt)
+        if (entries.length > 0) {
+          const oldest = entries[0]
+          await cache.delete(oldest.key)
+          await metadataCache.delete(getMetadataKey(oldest.key))
+          await setCacheKey(metadataCache, oldest.key, { isDelete: true })
+        }
+      }
     }
 
     // Store metadata

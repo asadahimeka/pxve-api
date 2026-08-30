@@ -1,3 +1,5 @@
+const WORKER_QUEUE_MAX = Number(Deno.env.get('WORKER_QUEUE_MAX') ?? 200)
+
 export class WorkerPool {
   taskQueue: any[] = []
   maxWorkers = 10
@@ -27,7 +29,11 @@ export class WorkerPool {
   }
 
   addTask(data: any) {
-    return new Promise<any>(resolve => {
+    return new Promise<any>((resolve, reject) => {
+      if (this.taskQueue.length >= WORKER_QUEUE_MAX) {
+        reject(new Error('Worker queue full'))
+        return
+      }
       this.taskQueue.push({ data, resolve })
       this.processTask()
     })
