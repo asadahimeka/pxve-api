@@ -1,6 +1,8 @@
 import { UA_HEADER } from '@lib/const.ts'
+import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
 export async function illuminartyImageAnalysis(url: string) {
+  await assertSafeUrl(url)
   const file = await fetch(url).then(r => r.blob())
   const form = new FormData()
   form.append('file', file)

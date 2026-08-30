@@ -13,7 +13,15 @@ export const proxyRoute = new Hono().on(
     responses: { 200: z.object() },
   }),
   async c => {
-    const resp = await commonProxy(c.req.raw)
-    return resp
+    try {
+      const resp = await commonProxy(c.req.raw)
+      return resp
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.startsWith('blocked ')) {
+        return c.json({ error: msg }, 400)
+      }
+      return c.json({ error: 'Proxy error' }, 502)
+    }
   }
 )

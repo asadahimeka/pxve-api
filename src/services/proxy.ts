@@ -1,8 +1,10 @@
 import { PIXIV_COOKIE } from '@lib/const.ts'
+import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
 export async function commonProxy(req: Request) {
   const url = new URL(req.url)
-  const reqUrl = new URL(url.pathname.replace('/proxy/', '') + url.search)
+  const target = url.pathname.replace('/proxy/', '') + url.search
+  const reqUrl = await assertSafeUrl(target)
 
   const reqHeaders = new Headers(req.headers)
   const delHeaderKeys = [

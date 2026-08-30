@@ -1,9 +1,10 @@
 import { UA_HEADER } from '@lib/const.ts'
+import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 import { webpWorkerPool } from './worker/index.ts'
 
 export async function convertWebP(url: string) {
   const reqUrl = new URL(url)
-  const imgUrl = new URL(reqUrl.pathname.replace('/api/webp/', '') + reqUrl.search)
+  const imgUrl = await assertSafeUrl(reqUrl.pathname.replace('/api/webp/', '') + reqUrl.search)
 
   if (!/\.(jpg|jpeg|png|webp)$/i.test(imgUrl.pathname)) throw new Error('Not supported')
 

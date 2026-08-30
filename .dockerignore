@@ -12,3 +12,7 @@ helm-charts
 .editorconfig
 .idea
 coverage*
+.env
+.env.*
+src/services/x-media/cookies.json
+cookies.json

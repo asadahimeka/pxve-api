@@ -315,7 +315,9 @@ export const cache = (options: {
     }
     // Sanitize sensitive query params and mask auth header presence
     key = sanitizeUrl(key)
-    const hasAuth = Boolean(c.req.header('authorization') || c.req.header('x-auth'))
+    const hasAuth = Boolean(
+      c.req.header('authorization') || c.req.header('x-auth') || c.req.header('cookie')?.includes('PHPSESSID'),
+    )
     key = `${key}&auth=${hasAuth ? '1' : '0'}`
 
     const cacheName = typeof options.cacheName === 'function' ? await options.cacheName(c) : options.cacheName
