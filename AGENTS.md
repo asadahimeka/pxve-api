@@ -9,6 +9,7 @@ Pxve API is a Deno-based web service that implements Pixiv-related APIs for the 
 ## Build Commands
 
 ### Development Commands
+
 ```bash
 # Development mode with hot reload
 deno task dev
@@ -36,6 +37,7 @@ deno task test:watch             # Run tests in watch mode
 ### Testing
 
 #### Test Structure
+
 ```
 tests/
 ├── lib/                 # Core library tests
@@ -57,6 +59,7 @@ tests/
 ```
 
 #### Running Tests
+
 ```bash
 # Run all tests
 deno task test
@@ -72,12 +75,15 @@ deno test --coverage=coverage/
 ```
 
 #### Test Environment
+
 - Mock responses are used for external API calls
 - Test utilities are provided in `tests/utils/test-helpers.ts`
 - Tests run with necessary permissions (`--allow-all`)
 
 #### Manual Testing
+
 For manual API testing:
+
 1. Use `deno task dev` to start development server
 2. Test endpoints at http://localhost:3021/docs or http://localhost:3021/swagger
 3. Use interactive Swagger UI for endpoint testing
@@ -85,6 +91,7 @@ For manual API testing:
 ## Code Style Guidelines
 
 ### Project Structure
+
 ```
 src/
 ├── app.ts              # Application entry point
@@ -95,6 +102,7 @@ src/
 ```
 
 ### Import Conventions
+
 ```typescript
 // Use absolute imports with aliases defined in deno.json
 import { Hono } from 'hono'
@@ -104,12 +112,14 @@ import { callPixivAction } from '@services/pixiv/action.ts'
 ```
 
 ### TypeScript Configuration
+
 - **Strict mode enabled** - All type violations are errors
 - **Path aliases**: `@lib/` → `./src/lib/`, `@services/` → `./src/services/`
 - **No unused variables**: Lint rule excluded (deno.json line 59)
 - **Explicit any allowed**: Lint rule excluded (deno.json line 60)
 
 ### Formatting Rules (deno.json)
+
 - **Line width**: 120 characters
 - **Indentation**: 2 spaces (no tabs)
 - **Quotes**: Single quotes
@@ -117,6 +127,7 @@ import { callPixivAction } from '@services/pixiv/action.ts'
 - **File extensions**: Always include `.ts` for imports
 
 ### Naming Conventions
+
 ```typescript
 // Files: kebab-case
 pixiv-api.ts, user-detail.ts, request-deduper.ts
@@ -145,6 +156,7 @@ type UserDetail = { ... }
 ### API Route Development
 
 #### Route Structure Template
+
 ```typescript
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
@@ -160,39 +172,48 @@ route.get(
     request: {
       query: z.object({
         param1: z.string().meta({ description: 'Parameter description' }),
-        param2: z.number().optional()
-      })
+        param2: z.number().optional(),
+      }),
     },
     responses: {
       200: z.object({ data: z.any() }),
-      500: z.object({ error: z.string() })
-    }
+      500: z.object({ error: z.string() }),
+    },
   }),
-  async c => {
+  async (c) => {
     const { param1, param2 } = c.req.valid('query')
     // Business logic here
     return c.json(result, 200)
-  }
+  },
 )
 ```
 
 ### Environment Variables & Constants
 
 #### Required Environment Variables
+
 - `PORT` (default: 3021)
 - `PIXIV_COOKIE` (recommended)
 - `PIXIV_ACCOUNT_TOKEN` (recommended)
 - `PIXIV_ACCOUNT_TOKEN_ALTS` (optional, comma-separated)
 
 #### Optional Environment Variables
+
 - `ENABLE_CACHE` (1/0)
 - `ACCEPT_DOMAINS` (comma-separated)
 - `UA_BLACKLIST` (comma-separated)
 - `HIBIAPI_BASE`
 - `SAUCENAO_API_KEY`
 - `SILICONClOUD_APT_KEY`
+- `PROXY_ALLOW_DOMAINS` — allowed proxy domains (comma-separated, `*.domain` for subdomains)
+- `PROXY_BLOCK_DOMAINS` — blocked proxy domains (comma-separated, `*.domain` for subdomains)
+- `PROXY_BLOCK_PRIVATE` — block private/reserved IPs (default: 1)
+- `MAX_DOWNLOAD_BYTES` — download size limit in bytes (default: 52428800 / 50MB)
+- `UGOIRA_MAX_ZIP_BYTES` — ugoira ZIP size limit in bytes (default: 52428800 / 50MB)
+- `API_TOKEN` — API access token; when set, only this token can access `/docs` paths
 
 #### Usage Pattern
+
 ```typescript
 // Always check for undefined values
 const token = PIXIV_ACCOUNT_TOKEN
@@ -201,12 +222,13 @@ if (!token) {
 }
 
 // Use optional chaining for arrays
-const altTokens = PIXIV_ACCOUNT_TOKEN_ALTS?.filter(e => e && e != token) || []
+const altTokens = PIXIV_ACCOUNT_TOKEN_ALTS?.filter((e) => e && e != token) || []
 ```
 
 ### API Integration Patterns
 
 #### Pixiv API Integration
+
 ```typescript
 // Use the PixivApi class with automatic token refresh
 import { withPixivRefresh } from '@services/pixiv/action.ts'
@@ -222,6 +244,7 @@ const headers = { ...PIXIV_API_HEADERS }
 ```
 
 #### HTTP Client Patterns
+
 ```typescript
 // Always use proper User-Agent headers
 import { UA_HEADER } from '@lib/const.ts'
@@ -240,6 +263,7 @@ if (response.status === 429) {
 ### Middleware Development
 
 #### Logger Middleware Pattern
+
 ```typescript
 export function customLogger(): MiddlewareHandler {
   return async (ctx, next) => {
@@ -251,29 +275,34 @@ export function customLogger(): MiddlewareHandler {
       ctx.req.method,
       ctx.res.status,
       time,
-      ctx.req.url.slice(0, 150)
+      ctx.req.url.slice(0, 150),
     )
   }
 }
 ```
 
 #### Cache Integration
+
 ```typescript
 // Use built-in cache for GET responses when enabled
 if (!Deno.args.includes('--dev') && Deno.env.get('ENABLE_CACHE') == '1') {
-  app.get('*', cache({
-    cacheName: 'pxve-api',
-    cacheControl: 'max-age=600',
-    maxAge: 600 * 1000,
-    maxSizeBytes: 1024 * 1024 * 1024,
-    cleanupInterval: 5 * 60 * 1000,
-  }))
+  app.get(
+    '*',
+    cache({
+      cacheName: 'pxve-api',
+      cacheControl: 'max-age=600',
+      maxAge: 600 * 1000,
+      maxSizeBytes: 1024 * 1024 * 1024,
+      cleanupInterval: 5 * 60 * 1000,
+    }),
+  )
 }
 ```
 
 ### Worker and Async Processing
 
 For CPU-intensive operations like image processing:
+
 ```typescript
 // Use worker pools for heavy operations
 import { WorkerPool } from '@lib/worker-pool.ts'
@@ -291,12 +320,14 @@ const result = await workerPool.addTask({
 ### Testing Guidelines
 
 #### Manual Testing Approach
+
 1. Start development server: `deno task dev`
 2. Access Swagger UI: http://localhost:3021/swagger
 3. Use interactive API documentation for testing
 4. Monitor console logs for debugging
 
 #### Debugging Tips
+
 ```typescript
 // Use structured logging for debugging
 console.log('[DEBUG]:', new Date().toLocaleString('zh'), 'operation', data)

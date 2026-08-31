@@ -1,12 +1,14 @@
-const PRIVATE_RE = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.|127\.|0\.0\.0\.0|169\.254\.)/
+const PRIVATE_RE =
+  /^(10\.|100\.(6[4-9]|[7-9]\d|1[0-2][0-7])\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.|127\.|0\.0\.0\.0|169\.254\.)/
 
 const METADATA_HOSTS = ['169.254.169.254', 'metadata.google.internal', '100.100.100.200']
 
 const DNS_CACHE_TTL_MS = 60_000
 const DNS_TIMEOUT_MS = 2_000
 
-/** DNS resolution cache: hostname → { ips: string[], expiresAt: number } */
+/** DNS resolution cache: hostname → { ips: string[], expiresAt: number } (LRU, max 1000 entries) */
 const dnsCache = new Map<string, { ips: string[]; expiresAt: number }>()
+const DNS_CACHE_MAX_SIZE = 1000
 
 /**
  * Check if a hostname (possibly bracketed IPv6 like "[::1]") is a private/reserved address.
@@ -109,6 +111,11 @@ async function resolveAndCheck(hostname: string): Promise<string[]> {
       throw new Error(`DNS resolution returned no records: ${hostname}`)
     }
     dnsCache.set(hostname, { ips, expiresAt: now + DNS_CACHE_TTL_MS })
+    // LRU eviction: remove oldest entries when cache exceeds limit
+    if (dnsCache.size > DNS_CACHE_MAX_SIZE) {
+      const oldestKey = dnsCache.keys().next().value
+      if (oldestKey !== undefined) dnsCache.delete(oldestKey)
+    }
     return ips
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {
@@ -141,7 +148,7 @@ export async function assertSafeUrl(
     .filter(Boolean)
   if (allow?.length) {
     const ok = allow.some((d) => d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d)
-    if (!ok) throw new Error(`not in allowlist: ${u.hostname}`)
+    if (!ok) throw new Error(`blocked allowlist: ${u.hostname}`)
   }
   const block = Deno.env
     .get('PROXY_BLOCK_DOMAINS')

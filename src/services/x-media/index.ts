@@ -12,7 +12,7 @@ async function acquireSlot(): Promise<void> {
     activeXMedia++
     return
   }
-  return new Promise<void>(resolve => {
+  return new Promise<void>((resolve) => {
     waitQueue.push(resolve)
   })
 }
@@ -26,7 +26,7 @@ function releaseSlot(): void {
 }
 
 const userNameRe = /^[A-Za-z0-9_]{1,15}$/
-const cursorRe = /^[A-Za-z0-9_-]{1,64}$/
+const cursorRe = /^[A-Za-z0-9_\-=+/]{1,64}$/
 
 export async function runFetchXMediaCmd(userName?: string, userId?: string, nextCursor?: string) {
   if (!userName && !userId) {
@@ -39,7 +39,7 @@ export async function runFetchXMediaCmd(userName?: string, userId?: string, next
     throw new Error('`userId` should be numeric.')
   }
   if (nextCursor && !cursorRe.test(nextCursor)) {
-    throw new Error('`nextCursor` must be 1-64 alphanumeric/underscore/hyphen characters.')
+    throw new Error('`nextCursor` must be 1-64 alphanumeric/underscore/hyphen/base64 characters.')
   }
 
   await acquireSlot()

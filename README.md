@@ -35,23 +35,27 @@ Deno 2.x
 ### 安装运行
 
 1. **克隆项目**
+
 ```bash
 git clone https://github.com/asadahimeka/pxve-api.git
 cd pxve-api
 ```
 
 2. **配置环境变量**
+
 ```bash
 cp .env.example .env
 # 编辑 .env 文件，填入必要的配置
 ```
 
 3. **开发模式运行**
+
 ```bash
 deno task dev
 ```
 
 4. **生产模式运行**
+
 ```bash
 deno task start
 ```
@@ -70,35 +74,56 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 
 ### 基础配置
 
-| 环境变量 | 说明 | 默认值 |
-|---------|------|--------|
-| `PORT` | 服务监听端口 | `3021` |
-| `ENABLE_CACHE` | 是否启用 GET 请求缓存 (1/0) | `0` |
+| 环境变量       | 说明                        | 默认值 |
+| -------------- | --------------------------- | ------ |
+| `PORT`         | 服务监听端口                | `3021` |
+| `ENABLE_CACHE` | 是否启用 GET 请求缓存 (1/0) | `0`    |
 
 ### 安全配置
 
-| 环境变量 | 说明 |
-|---------|------|
+| 环境变量         | 说明                           |
+| ---------------- | ------------------------------ |
 | `ACCEPT_DOMAINS` | 请求来源域名白名单（逗号分隔） |
-| `UA_BLACKLIST` | User-Agent 黑名单（逗号分隔） |
+| `UA_BLACKLIST`   | User-Agent 黑名单（逗号分隔）  |
 
 ### Pixiv 配置
 
 > 获取 RefreshToken 参考教程：https://www.nanoka.top/posts/e78ef86/
 
-| 环境变量 | 说明 | 必需 |
-|---------|------|------|
-| `PIXIV_COOKIE` | Pixiv Web API Cookie | 推荐 |
-| `PIXIV_ACCOUNT_TOKEN` | Pixiv App API Refresh Token | 推荐 |
+| 环境变量                   | 说明                            | 必需 |
+| -------------------------- | ------------------------------- | ---- |
+| `PIXIV_COOKIE`             | Pixiv Web API Cookie            | 推荐 |
+| `PIXIV_ACCOUNT_TOKEN`      | Pixiv App API Refresh Token     | 推荐 |
 | `PIXIV_ACCOUNT_TOKEN_ALTS` | 备用 Refresh Tokens（逗号分隔） | 可选 |
 
 ### 第三方服务配置
 
-| 环境变量 | 说明 | 用途 |
-|---------|------|------|
-| `HIBIAPI_BASE` | 备用 HibiAPI 服务域名 | API 转发 |
-| `SAUCENAO_API_KEY` | SauceNAO API Key | 以图搜图 |
-| `SILICONClOUD_APT_KEY` | 硅基流动 API Key | 小说翻译 |
+| 环境变量               | 说明                  | 用途     |
+| ---------------------- | --------------------- | -------- |
+| `HIBIAPI_BASE`         | 备用 HibiAPI 服务域名 | API 转发 |
+| `SAUCENAO_API_KEY`     | SauceNAO API Key      | 以图搜图 |
+| `SILICONClOUD_APT_KEY` | 硅基流动 API Key      | 小说翻译 |
+
+### 代理安全配置
+
+| 环境变量               | 说明                                                       | 默认值          |
+| ---------------------- | ---------------------------------------------------------- | --------------- |
+| `PROXY_ALLOW_DOMAINS`  | 允许的代理域名白名单（逗号分隔，支持 `*.domain` 通配子域） | 无              |
+| `PROXY_BLOCK_DOMAINS`  | 禁止的代理域名黑名单（逗号分隔，支持 `*.domain` 通配）     | 无              |
+| `PROXY_BLOCK_PRIVATE`  | 禁止访问私网地址（1/0）                                    | `1`             |
+| `MAX_DOWNLOAD_BYTES`   | 下载文件大小上限（字节）                                   | 52428800 (50MB) |
+| `UGOIRA_MAX_ZIP_BYTES` | Ugoira ZIP 文件大小上限（字节）                            | 52428800 (50MB) |
+| `API_TOKEN`            | API 访问令牌，设置后仅该 Token 可访问 `/docs` 等文档路径   | 无              |
+
+### CORS 说明
+
+- CORS 域名匹配使用**精确匹配**，若需允许子域（如 `*.pxve.cc`），请配置为 `*.pxve.cc`
+- 非浏览器客户端（如 curl）不发送 `Origin`/`Referer` 头，可能收到 403 响应——这是预期行为
+
+### 跨平台说明
+
+- Windows 下使用 PowerShell 的 `Expand-Archive` 解压 ZIP，需 `--allow-write` 权限
+- `node_modules` 的原生绑定仅对装包时的平台有效，WSL 与 Windows 不可混用
 
 ## 📚 API 文档
 
