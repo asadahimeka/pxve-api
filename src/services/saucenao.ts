@@ -1,6 +1,8 @@
 import { SAUCENAO_API_KEY, UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
+const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
+
 export async function saucenaoSearch(file: string | Blob) {
   if (!SAUCENAO_API_KEY) throw new Error('SAUCENAO_API_KEY is not set')
 
@@ -13,7 +15,19 @@ export async function saucenaoSearch(file: string | Blob) {
 
   if (typeof file == 'string') {
     await assertSafeUrl(file)
-    form.set('file', await fetch(file).then((r) => r.blob()))
+    const fileResp = await fetch(file)
+    const contentLength = fileResp.headers.get('content-length')
+    if (contentLength) {
+      const parsed = Number(contentLength)
+      if (!Number.isNaN(parsed) && parsed > MAX_DOWNLOAD_BYTES) {
+        throw new Error('Payload Too Large')
+      }
+    }
+    const blob = await fileResp.blob()
+    if (blob.size > MAX_DOWNLOAD_BYTES) {
+      throw new Error('Payload Too Large')
+    }
+    form.set('file', blob)
   } else {
     form.set('file', file)
   }

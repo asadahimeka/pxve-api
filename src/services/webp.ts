@@ -2,6 +2,8 @@ import { UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 import { webpWorkerPool } from './worker/index.ts'
 
+const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
+
 export async function convertWebP(url: string) {
   const reqUrl = new URL(url)
   const imgUrl = await assertSafeUrl(reqUrl.pathname.replace('/api/webp/', '') + reqUrl.search)
@@ -16,7 +18,18 @@ export async function convertWebP(url: string) {
   const imgResp = await fetch(imgUrl, { headers: UA_HEADER })
   if (!imgResp.ok) throw new Error('Response not ok.')
 
+  const contentLength = imgResp.headers.get('content-length')
+  if (contentLength) {
+    const parsed = Number(contentLength)
+    if (!Number.isNaN(parsed) && parsed > MAX_DOWNLOAD_BYTES) {
+      throw new Error('Payload Too Large')
+    }
+  }
+
   const inputBuffer = await imgResp.arrayBuffer()
+  if (inputBuffer.byteLength > MAX_DOWNLOAD_BYTES) {
+    throw new Error('Payload Too Large')
+  }
   const options = width && height ? { width, height } : {}
 
   const result = await webpWorkerPool.addTask({ inputBuffer, options })

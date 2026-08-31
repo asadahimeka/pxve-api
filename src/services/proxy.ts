@@ -1,6 +1,8 @@
 import { PIXIV_COOKIE } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
+const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
+
 export async function commonProxy(req: Request) {
   const url = new URL(req.url)
   const target = url.pathname.replace('/proxy/', '') + url.search
@@ -45,7 +47,7 @@ export async function commonProxy(req: Request) {
     'x-forwarded-port',
   ]
 
-  delHeaderKeys.forEach(key => {
+  delHeaderKeys.forEach((key) => {
     reqHeaders.delete(key)
   })
 
@@ -64,12 +66,26 @@ export async function commonProxy(req: Request) {
   }
 
   const resp = await fetch(new Request(reqUrl, req), { headers: reqHeaders })
+
+  const contentLength = resp.headers.get('content-length')
+  if (contentLength) {
+    const parsed = Number(contentLength)
+    if (!Number.isNaN(parsed) && parsed > MAX_DOWNLOAD_BYTES) {
+      return new Response(null, { status: 413, statusText: 'Payload Too Large' })
+    }
+  }
+
   const respHeaders = new Headers(resp.headers)
-  delHeaderKeys.forEach(key => {
+  delHeaderKeys.forEach((key) => {
     respHeaders.delete(key)
   })
 
-  return new Response(resp.body, {
+  const buffer = await resp.arrayBuffer()
+  if (buffer.byteLength > MAX_DOWNLOAD_BYTES) {
+    return new Response(null, { status: 413, statusText: 'Payload Too Large' })
+  }
+
+  return new Response(buffer, {
     status: resp.status,
     statusText: resp.statusText,
     headers: respHeaders,

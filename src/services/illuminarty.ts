@@ -1,9 +1,24 @@
 import { UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
+const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
+
 export async function illuminartyImageAnalysis(url: string) {
   await assertSafeUrl(url)
-  const file = await fetch(url).then(r => r.blob())
+  const imgResp = await fetch(url)
+
+  const contentLength = imgResp.headers.get('content-length')
+  if (contentLength) {
+    const parsed = Number(contentLength)
+    if (!Number.isNaN(parsed) && parsed > MAX_DOWNLOAD_BYTES) {
+      throw new Error('Payload Too Large')
+    }
+  }
+
+  const file = await imgResp.blob()
+  if (file.size > MAX_DOWNLOAD_BYTES) {
+    throw new Error('Payload Too Large')
+  }
   const form = new FormData()
   form.append('file', file)
 
