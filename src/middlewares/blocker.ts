@@ -2,19 +2,21 @@ import type { MiddlewareHandler } from 'hono'
 import { isbot } from 'isbot'
 import { GET_ACCEPT_DOMAINS, UA_BLACKLIST } from '@lib/const.ts'
 
+// Warn once at module load time if ACCEPT_DOMAINS is empty
+if (!GET_ACCEPT_DOMAINS().length) {
+  console.warn('[blocker] ACCEPT_DOMAINS empty, CORS allows *')
+}
+
 /**
  * Precise origin matching: exact hostname match or wildcard (*.domain) endsWith.
- * Empty ACCEPT_DOMAINS falls back to allow-all with a warning.
+ * Empty ACCEPT_DOMAINS falls back to allow-all.
  */
 export function isAllowedOrigin(origin: string): boolean {
   const list = GET_ACCEPT_DOMAINS()
-  if (!list.length) {
-    console.warn('[blocker] ACCEPT_DOMAINS empty, CORS allows *')
-    return true
-  }
+  if (!list.length) return true
   try {
     const h = new URL(origin).hostname
-    return list.some(d => (d.startsWith('*.') ? h === d.slice(2) || h.endsWith(d.slice(1)) : h === d))
+    return list.some((d) => (d.startsWith('*.') ? h === d.slice(2) || h.endsWith(d.slice(1)) : h === d))
   } catch {
     return false
   }
@@ -28,7 +30,7 @@ function isAccepted(path: string, ua?: string, origin?: string, referer?: string
   if (isbot(ua)) return false
 
   ua = ua.toLowerCase()
-  if (UA_BLACKLIST.some(e => ua.includes(e.toLowerCase()))) {
+  if (UA_BLACKLIST.some((e) => ua.includes(e.toLowerCase()))) {
     return false
   }
 
