@@ -54,8 +54,8 @@ export async function request({
     },
   }
 
-  if (!isAnon && (headers.cookie || PIXIV_COOKIE)) {
-    config.headers.cookie = headers.cookie || PIXIV_COOKIE
+  if (!isAnon && PIXIV_COOKIE) {
+    config.headers.cookie = PIXIV_COOKIE
   }
 
   if (headers['content-type']) {

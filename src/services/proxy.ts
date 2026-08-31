@@ -50,12 +50,16 @@ export async function commonProxy(req: Request) {
   })
 
   if (reqUrl.hostname != 'yande.re') {
-    reqHeaders.set('host', reqUrl.host)
     reqHeaders.set('origin', reqUrl.origin)
     reqHeaders.set('referer', reqUrl.origin + '/')
   }
 
-  if (reqUrl.hostname == 'www.pixiv.net' && !reqUrl.search.includes('_anon=1') && PIXIV_COOKIE) {
+  if (
+    req.method.toUpperCase() == 'GET' &&
+    reqUrl.hostname == 'www.pixiv.net' &&
+    !reqUrl.search.includes('_anon=1') &&
+    PIXIV_COOKIE
+  ) {
     reqHeaders.set('cookie', PIXIV_COOKIE)
   }
 

@@ -1,23 +1,20 @@
 import type { MiddlewareHandler } from 'hono'
 import { isbot } from 'isbot'
-import { UA_BLACKLIST } from '@lib/const.ts'
+import { GET_ACCEPT_DOMAINS, UA_BLACKLIST } from '@lib/const.ts'
 
 /**
  * Precise origin matching: exact hostname match or wildcard (*.domain) endsWith.
  * Empty ACCEPT_DOMAINS falls back to allow-all with a warning.
  */
 export function isAllowedOrigin(origin: string): boolean {
-  const raw = Deno.env.get('ACCEPT_DOMAINS') ?? ''
-  if (!raw.trim()) {
+  const list = GET_ACCEPT_DOMAINS()
+  if (!list.length) {
     console.warn('[blocker] ACCEPT_DOMAINS empty, CORS allows *')
     return true
   }
-  const list = raw.split(',').map(s => s.trim()).filter(Boolean)
   try {
     const h = new URL(origin).hostname
-    return list.some(d =>
-      d.startsWith('*.') ? h === d.slice(2) || h.endsWith(d.slice(1)) : h === d
-    )
+    return list.some(d => (d.startsWith('*.') ? h === d.slice(2) || h.endsWith(d.slice(1)) : h === d))
   } catch {
     return false
   }

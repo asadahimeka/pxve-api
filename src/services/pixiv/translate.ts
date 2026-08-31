@@ -24,7 +24,7 @@ async function getNovelText(id: any) {
 const srvDefMap = (to: string, aiModel: string) =>
   ({
     ms: async (text: string) => {
-      const resp = await msTranslate(text, null, to || 'zh-Hans', { translateOptions: { textType: 'html' } })
+      const resp = await msTranslate(text, null, to || 'zh-Hans')
       return resp?.translation
     },
     gg: async (text: string) => {
@@ -122,7 +122,7 @@ function replaceNovelMark(text: string) {
 
 const aiModelMap: Record<string, string> = {
   glm: 'THUDM/GLM-Z1-9B-0414',
-  qwen: 'Qwen/Qwen2.5-7B-Instruct'
+  qwen: 'Qwen/Qwen2.5-7B-Instruct',
 }
 async function siliconCloudTranslate(text: string, aiModel: string) {
   aiModel = aiModel || 'glm'

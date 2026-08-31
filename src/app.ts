@@ -22,7 +22,7 @@ const app = new Hono()
 app.use(logger())
 app.use(rateLimit())
 app.use(optionalAuth())
-app.use(cors({ origin: (origin) => isAllowedOrigin(origin) ? origin : undefined, credentials: true }))
+app.use(cors({ origin: origin => (isAllowedOrigin(origin) ? origin : undefined), credentials: true }))
 app.use(secureHeaders({ crossOriginResourcePolicy: 'same-site' }))
 app.use(blocker())
 app.get('*', etag())
@@ -38,7 +38,7 @@ if (!Deno.args.includes('--dev') && Deno.env.get('ENABLE_CACHE') == '1') {
       maxSizeBytes: 1024 * 1024 * 1024, // 1024MB
       maxEntries: Number(Deno.env.get('CACHE_MAX_ENTRIES') || '5000'),
       cleanupInterval: 5 * 60 * 1000, // 5min
-    }),
+    })
   )
 }
 
@@ -74,27 +74,24 @@ Partially compatible with HibiAPI.
 createOpenApiDocument(
   app,
   { info: { title: 'Pxve API', version: '1.0.0', description } },
-  { routeName: '/openapi.json' },
+  { routeName: '/openapi.json' }
 )
 
-const cdn = 'https://fastly.jsdelivr.net/npm/@scalar/api-reference@1.43.11/dist/browser/standalone.js'
+const cdn = 'https://unpkg.com/@scalar/api-reference@1.43.11/dist/browser/standalone.js'
 app.get('/openapi-hibiapi.json', serveStatic({ path: './public/openapi-hibiapi.json' }))
 app.get('/docs', Scalar({ url: '/openapi.json', theme: 'elysiajs', pageTitle: 'Pxve API', cdn }))
 app.get('/docs/hibiapi', Scalar({ url: '/openapi-hibiapi.json', theme: 'purple', pageTitle: 'HibiAPI', cdn }))
 app.get('/swagger', swaggerUI({ url: '/openapi.json' }))
 app.get('/swagger/hibiapi', swaggerUI({ url: '/openapi-hibiapi.json' }))
 
-app.notFound((c) => c.json({ error: 'Not Found' }, 404))
-app.onError((err, c) => {
-  const pub = toPublicError(err)
-  return c.json(pub, 500)
-})
+app.notFound(c => c.json({ error: 'Not Found' }, 404))
+app.onError((err, c) => c.json(toPublicError(err), 500))
 
 const deduper = new RequestDeduper()
 const port = Number(Deno.env.get('PORT') ?? 3021)
-Deno.serve(
-  { hostname: '0.0.0.0', port },
-  (req, ...args) => deduper.run(req.url, async () => await app.fetch(req, ...args)),
-)
+Deno.serve({ hostname: '0.0.0.0', port }, (req, ...args) => {
+  const key = req.method.toUpperCase() == 'GET' ? req.url : crypto.randomUUID()
+  return deduper.run(key, async () => await app.fetch(req, ...args))
+})
 
 export { app }

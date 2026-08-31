@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --watch --env --allow-net --allow-env --allow-read --allow-write=/tmp --allow-run=unzip,ffmpeg,python --allow-sys=dns ./src/app.ts --dev",
-    "start": "deno run --env --allow-net --allow-env --allow-read --allow-write=/tmp --allow-run=unzip,ffmpeg,python --allow-sys=dns ./src/app.ts",
+    "dev": "deno run --watch --env --allow-net --allow-env --allow-read --allow-write=/tmp --allow-run=zipinfo,unzip,ffmpeg,python ./src/app.ts --dev",
+    "start": "deno run --env --allow-net --allow-env --allow-read --allow-write=/tmp --allow-run=zipinfo,unzip,ffmpeg,python ./src/app.ts",
     "type-check": "deno check ./src/**/*.ts",
     "manage-cache": "deno run -A scripts/cache-manage.ts",
     "fmt": "deno fmt",
