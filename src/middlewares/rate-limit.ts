@@ -1,5 +1,4 @@
 import type { Context, MiddlewareHandler } from 'hono'
-import { getConnInfo } from 'hono/deno'
 
 const STORE_MAX = 5000
 
@@ -28,27 +27,12 @@ function cleanupStore(now: number): void {
 }
 
 function getClientIP(c: Context) {
-  const trustCloudflare = Deno.env.get('TRUST_CLOUDFLARE') === 'true'
-  if (trustCloudflare) {
-    return c.req.header('cf-connecting-ip') || 'unknown'
-  }
-
-  const realIP = c.req.header('x-real-ip')
-  if (realIP) {
-    return realIP
-  }
-
-  const xff = c.req.header('x-forwarded-for')
-  if (xff) {
-    return xff.split(',')[0].trim()
-  }
-
-  try {
-    const connInfo = getConnInfo(c)
-    return connInfo.remote.address || 'unknown'
-  } catch {
-    return 'unknown'
-  }
+  return (
+    c.req.header('x-real-ip') ||
+    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
+    c.req.header('cf-connecting-ip') ||
+    'unknown'
+  )
 }
 
 export function rateLimit(opts?: { windowMs?: number; max?: number }): MiddlewareHandler {
