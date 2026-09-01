@@ -26,7 +26,7 @@ export async function translate(text: string, from = 'ja', to = 'zh-CHS') {
   const mysticTime = Date.now().toString()
 
   const sign = CryptoJS.MD5(`client=fanyideskweb&mysticTime=${mysticTime}&product=webfanyi&key=${SECRET_KEY}`).toString(
-    CryptoJS.enc.Hex
+    CryptoJS.enc.Hex,
   )
 
   const headers = {
@@ -36,13 +36,19 @@ export async function translate(text: string, from = 'ja', to = 'zh-CHS') {
     'origin': 'https://fanyi.youdao.com',
     'Referer': 'https://fanyi.youdao.com/',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'cookie': `OUTFOX_SEARCH_USER_ID=${Math.floor(Math.random() * 100000000)}@${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}; OUTFOX_SEARCH_USER_ID_NCOO=${Math.floor(Math.random() * 100000000)}.${Math.floor(Math.random() * 100000000)}`,
+    'cookie': `OUTFOX_SEARCH_USER_ID=${Math.floor(Math.random() * 100000000)}@${Math.floor(Math.random() * 255)}.${
+      Math.floor(Math.random() * 255)
+    }.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}; OUTFOX_SEARCH_USER_ID_NCOO=${
+      Math.floor(Math.random() * 100000000)
+    }.${Math.floor(Math.random() * 100000000)}`,
     ...UA_HEADER,
   }
 
   const res = await fetch(url, {
     method: 'POST',
-    body: `i=${encodeURIComponent(text)}&from=${from}&to=${to}&useTerm=false&domain=0&dictResult=true&keyid=webfanyi&sign=${sign}&client=fanyideskweb&product=webfanyi&appVersion=1.0.0&vendor=web&pointParam=client%2CmysticTime%2Cproduct&mysticTime=${mysticTime}&keyfrom=fanyi.web&mid=1&screen=1&model=1&network=wifi&abtest=0&yduuid=abcdefg`,
+    body: `i=${
+      encodeURIComponent(text)
+    }&from=${from}&to=${to}&useTerm=false&domain=0&dictResult=true&keyid=webfanyi&sign=${sign}&client=fanyideskweb&product=webfanyi&appVersion=1.0.0&vendor=web&pointParam=client%2CmysticTime%2Cproduct&mysticTime=${mysticTime}&keyfrom=fanyi.web&mid=1&screen=1&model=1&network=wifi&abtest=0&yduuid=abcdefg`,
     headers: {
       ...headers,
       'content-type': 'application/x-www-form-urlencoded',

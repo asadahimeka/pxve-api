@@ -23,7 +23,7 @@ Deno.test('pixiv translate service - text splitting works correctly', () => {
   const novelText = 'a'.repeat(2500)
   const arr = novelText.replace(/\n+/g, '\n').split('')
   const indexes = []
-  
+
   for (let i = 0, j = 1e3; i < arr.length; i++) {
     if (/\n/.test(arr[i]) && i > j) {
       indexes.push(i)
@@ -31,7 +31,7 @@ Deno.test('pixiv translate service - text splitting works correctly', () => {
     }
   }
   indexes.push(arr.length)
-  
+
   const splitTextArr = indexes
     .reduce(
       (acc, cur) => {
@@ -42,11 +42,11 @@ Deno.test('pixiv translate service - text splitting works correctly', () => {
         })
         return acc
       },
-      [{ v: '', i: 0 }]
+      [{ v: '', i: 0 }],
     )
-    .map(e => e.v)
+    .map((e) => e.v)
     .slice(1)
-  
+
   assertEquals(splitTextArr.length >= 1, true)
 })
 
@@ -55,7 +55,7 @@ Deno.test('pixiv translate service - aiModelMap contains expected models', () =>
     glm: 'THUDM/glm-4-9b-chat',
     qwen: 'Qwen/Qwen2-7B-Instruct',
   }
-  
+
   assertEquals(aiModelMap.glm, 'THUDM/glm-4-9b-chat')
   assertEquals(aiModelMap.qwen, 'Qwen/Qwen2-7B-Instruct')
 })

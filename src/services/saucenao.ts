@@ -1,7 +1,5 @@
-import { SAUCENAO_API_KEY, UA_HEADER } from '@lib/const.ts'
+import { MAX_DOWNLOAD_BYTES, SAUCENAO_API_KEY, UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
-
-const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
 
 export async function saucenaoSearch(file: string | Blob) {
   if (!SAUCENAO_API_KEY) throw new Error('SAUCENAO_API_KEY is not set')

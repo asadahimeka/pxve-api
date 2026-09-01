@@ -1,29 +1,29 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "deno",
-			"command": "task",
-			"args": [
-				"dev"
-			],
-			"problemMatcher": [
-				"$deno"
-			],
-			"label": "deno: dev",
-			"detail": "$ deno run --watch --env --allow-all ./src/app.ts --dev"
-		},
-		{
-			"type": "deno",
-			"command": "task",
-			"args": [
-				"start"
-			],
-			"problemMatcher": [
-				"$deno"
-			],
-			"label": "deno: start",
-			"detail": "$ deno run --env --allow-all ./src/app.ts"
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "deno",
+      "command": "task",
+      "args": [
+        "dev"
+      ],
+      "problemMatcher": [
+        "$deno"
+      ],
+      "label": "deno: dev",
+      "detail": "$ deno run --watch --env --allow-all ./src/app.ts --dev"
+    },
+    {
+      "type": "deno",
+      "command": "task",
+      "args": [
+        "start"
+      ],
+      "problemMatcher": [
+        "$deno"
+      ],
+      "label": "deno: start",
+      "detail": "$ deno run --env --allow-all ./src/app.ts"
+    }
+  ]
 }

@@ -12,7 +12,7 @@ export const proxyRoute = new Hono().on(
     request: { param: z.object() },
     responses: { 200: z.object() },
   }),
-  async c => {
+  async (c) => {
     try {
       const resp = await commonProxy(c.req.raw)
       return resp
@@ -23,5 +23,5 @@ export const proxyRoute = new Hono().on(
       }
       return c.json({ error: 'Proxy error' }, 502)
     }
-  }
+  },
 )

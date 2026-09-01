@@ -5,7 +5,7 @@ export async function recoverPidImage(id: string) {
   const fns = [queryDanbooru, queryDanbooru2, queryGelbooru, queryYandere, queryYandere2]
   for (const fn of fns) {
     const res = await fn(id).catch(() => null)
-    if (res && res.every(e => e.source.includes('pixiv') || e.source.includes('pximg'))) {
+    if (res && res.every((e) => e.source.includes('pixiv') || e.source.includes('pximg'))) {
       body = JSON.stringify(res)
       break
     }
@@ -19,7 +19,7 @@ const config = {
 }
 
 function checkRecoverRes(arr: any[]) {
-  return arr.every(e => e.sampleUrl)
+  return arr.every((e) => e.sampleUrl)
 }
 
 async function queryDanbooru(id: string) {
@@ -27,7 +27,7 @@ async function queryDanbooru(id: string) {
   if (!res.ok) return null
   const json: any[] = await res.json()
   if (!json.length) return null
-  const arr = json.map(e => ({
+  const arr = json.map((e) => ({
     source: e.source,
     tags: e.tag_string.split(/\s/),
     createDate: new Date(e.created_at).toJSON(),
@@ -42,7 +42,7 @@ async function queryDanbooru2(id: string) {
   if (!res.ok) return null
   const json: any[] = await res.json()
   if (!json.length) return null
-  const arr = json.map(e => ({
+  const arr = json.map((e) => ({
     source: e.source,
     tags: e.tag_string.split(/\s/),
     createDate: new Date(e.created_at).toJSON(),
@@ -55,12 +55,12 @@ async function queryDanbooru2(id: string) {
 async function queryGelbooru(id: string) {
   const res = await fetch(
     `https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&tags=source:*pximg*/${id}_*&limit=42&api_key=c306a5981d1e0c50518df27dbbebcf027ca4763db6d24fd1b60021d43c6c76d7&user_id=1045457`,
-    config
+    config,
   )
   if (!res.ok) return null
   const json = await res.json()
   if (!json?.post?.length) return null
-  const arr = (json.post as any[]).map(e => ({
+  const arr = (json.post as any[]).map((e) => ({
     source: e.source,
     tags: e.tags.split(/\s/),
     createDate: new Date(e.created_at).toJSON(),
@@ -75,7 +75,7 @@ async function queryYandere(id: string) {
   if (!res.ok) return null
   const json: any[] = await res.json()
   if (!json.length) return null
-  const arr = json.map(e => ({
+  const arr = json.map((e) => ({
     source: e.source,
     tags: e.tags.split(/\s/),
     createDate: new Date(e.created_at * 1000).toJSON(),
@@ -90,7 +90,7 @@ async function queryYandere2(id: string) {
   if (!res.ok) return null
   const json: any[] = await res.json()
   if (!json.length) return null
-  const arr = json.map(e => ({
+  const arr = json.map((e) => ({
     source: e.source,
     tags: e.tags.split(/\s/),
     createDate: new Date(e.created_at * 1000).toJSON(),

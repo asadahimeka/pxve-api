@@ -1,7 +1,5 @@
-import { UA_HEADER } from '@lib/const.ts'
+import { MAX_DOWNLOAD_BYTES, UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
-
-const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
 
 export async function illuminartyImageAnalysis(url: string) {
   await assertSafeUrl(url)

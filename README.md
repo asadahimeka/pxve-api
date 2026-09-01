@@ -120,11 +120,6 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 - CORS 域名匹配使用**精确匹配**，若需允许子域（如 `*.pxve.cc`），请配置为 `*.pxve.cc`
 - 非浏览器客户端（如 curl）不发送 `Origin`/`Referer` 头，可能收到 403 响应——这是预期行为
 
-### 跨平台说明
-
-- Windows 下使用 PowerShell 的 `Expand-Archive` 解压 ZIP，需 `--allow-write` 权限
-- `node_modules` 的原生绑定仅对装包时的平台有效，WSL 与 Windows 不可混用
-
 ## 📚 API 文档
 
 启动服务后，可以通过以下地址访问 API 文档：
@@ -225,7 +220,7 @@ pxve-api/
 1. 请遵守 Pixiv 的使用条款和相关法律法规
 2. 合理使用 API，避免过于频繁的请求
 3. 部分功能需要相应的 API Key 或 Token
-4. 建议在生产环境中启用缓存以提高性能
+4. 建议在生产环境中启用缓存(Nginx/Cloudflare)以提高性能
 
 ## 📄 许可证
 

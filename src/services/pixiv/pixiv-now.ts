@@ -1,7 +1,7 @@
 // @ts-types="npm:@types/qs"
 import { stringify } from 'qs'
 import { parseCookie } from 'cookie'
-import { load, type CheerioAPI } from 'cheerio'
+import { type CheerioAPI, load } from 'cheerio'
 import { PIXIV_COOKIE, UA_HEADER } from '@lib/const.ts'
 
 export function objectToQueryString(queryParameters?: Record<string, any>) {

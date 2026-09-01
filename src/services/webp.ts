@@ -1,8 +1,6 @@
-import { UA_HEADER } from '@lib/const.ts'
+import { MAX_DOWNLOAD_BYTES, UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 import { webpWorkerPool } from './worker/index.ts'
-
-const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
 
 export async function convertWebP(url: string) {
   const reqUrl = new URL(url)

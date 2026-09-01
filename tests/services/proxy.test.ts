@@ -5,7 +5,7 @@ import { createMockRequest } from '../utils/test-helpers.ts'
 
 Deno.test('proxy service - basic proxy functionality', async () => {
   const mockContent = 'proxied content'
-  
+
   const originalFetch = globalThis.fetch
   globalThis.fetch = async (input: RequestInfo | URL): Promise<Response> => {
     const urlStr = input instanceof Request ? input.url : (typeof input === 'string' ? input : input.toString())
@@ -20,9 +20,9 @@ Deno.test('proxy service - basic proxy functionality', async () => {
 
   try {
     const req = createMockRequest('https://localhost:3021/proxy/https://example.com/target')
-    
+
     const result = await commonProxy(req)
-    
+
     assertEquals(result.status, 200)
     assertEquals(await result.text(), 'proxied content')
     assertEquals(result.headers.get('content-type'), 'text/plain')
@@ -71,7 +71,7 @@ Deno.test('proxy service - handles HTTP errors', async () => {
 
   try {
     const req = createMockRequest('https://localhost:3021/proxy/https://example.com/not-found')
-    
+
     const result = await commonProxy(req)
     assertEquals(result.status, 404)
   } finally {

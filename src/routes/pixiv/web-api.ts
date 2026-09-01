@@ -62,7 +62,7 @@ export const pixivWebApiRoute = new Hono().get(
       200: z.object(),
     },
   }),
-  async c => {
+  async (c) => {
     const { func } = c.req.valid('param')
 
     if (!allowedFuncs.includes(func)) return c.notFound()
@@ -77,5 +77,5 @@ export const pixivWebApiRoute = new Hono().get(
     const data = await fn(...funcArgs)
 
     return c.json(data, 200, { 'Cache-Control': 'max-age=600' })
-  }
+  },
 )

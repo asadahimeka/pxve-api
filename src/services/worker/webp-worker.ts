@@ -1,6 +1,6 @@
 import sharp from 'sharp'
 
-self.onmessage = async event => {
+self.onmessage = async (event) => {
   const { inputBuffer, options = {} } = event.data
 
   try {

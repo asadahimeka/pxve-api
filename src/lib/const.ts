@@ -11,6 +11,7 @@ const getCommaSplitVals = (str?: string) => {
 export const GET_API_TOKEN = () => Deno.env.get('API_TOKEN')?.trim()
 export const GET_ACCEPT_DOMAINS = () => getCommaSplitVals(Deno.env.get('ACCEPT_DOMAINS'))
 export const UA_BLACKLIST = getCommaSplitVals(Deno.env.get('UA_BLACKLIST'))
+export const MAX_DOWNLOAD_BYTES = Number(Deno.env.get('MAX_DOWNLOAD_BYTES') ?? 52428800) || 52428800
 
 export const PIXIV_COOKIE = Deno.env.get('PIXIV_COOKIE')?.trim()
 export const PIXIV_ACCOUNT_TOKEN = Deno.env.get('PIXIV_ACCOUNT_TOKEN')?.trim()

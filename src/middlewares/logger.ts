@@ -14,7 +14,7 @@ export function logger(): MiddlewareHandler {
       time,
       sanitizeUrl(ctx.req.url).slice(0, 150),
       ctx.req.header('User-Agent'),
-      ctx.req.header('Origin')
+      ctx.req.header('Origin'),
     )
   }
 }

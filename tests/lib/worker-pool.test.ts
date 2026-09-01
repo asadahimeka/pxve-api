@@ -9,10 +9,10 @@ Deno.test('WorkerPool - basic functionality', async () => {
       self.postMessage(data * 2)
     }
   `
-  
+
   const blob = new Blob([workerCode], { type: 'application/javascript' })
   const workerUrl = URL.createObjectURL(blob)
-  
+
   try {
     const pool = new WorkerPool(workerUrl, 2)
 
@@ -26,7 +26,7 @@ Deno.test('WorkerPool - basic functionality', async () => {
       pool.addTask(7),
       pool.addTask(2),
     ])
-    
+
     assertEquals(results, [6, 14, 4])
   } finally {
     URL.revokeObjectURL(workerUrl)

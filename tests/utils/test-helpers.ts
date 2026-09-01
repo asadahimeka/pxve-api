@@ -17,14 +17,14 @@ export interface TestResponse {
 export function createMockResponse(
   body: string | object,
   status = 200,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ): TestResponse {
   const response = new Response(
     typeof body === 'string' ? body : JSON.stringify(body),
     {
       status,
       headers: new Headers(headers),
-    }
+    },
   )
 
   return {
@@ -40,7 +40,7 @@ export function createMockResponse(
  */
 export function createMockRequest(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Request {
   return new Request(url, {
     headers: {
@@ -56,11 +56,11 @@ export function createMockRequest(
  */
 export function createMockContext(
   req: Request,
-  env: Record<string, string> = {}
+  env: Record<string, string> = {},
 ) {
   const headers = new Headers()
   const status = 200
-  
+
   return {
     req,
     env,
@@ -95,7 +95,7 @@ export function createMockContext(
  * Wait for a specified number of milliseconds
  */
 export function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -104,10 +104,10 @@ export function delay(ms: number): Promise<void> {
 export function assertApiResponse(
   response: TestResponse,
   expectedStatus: number,
-  expectedFields?: string[]
+  expectedFields?: string[],
 ) {
   assertEquals(response.status, expectedStatus)
-  
+
   if (expectedFields && response.status === 200) {
     const jsonData = JSON.parse(response.body)
     for (const field of expectedFields) {
@@ -150,21 +150,21 @@ export class TestEnvironment {
  */
 export function createMockFetch(responses: Array<{ url: string; response: Response }>) {
   const originalFetch = globalThis.fetch
-  
+
   const mockFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString()
-    const mockResponse = responses.find(r => r.url === url)
-    
+    const mockResponse = responses.find((r) => r.url === url)
+
     if (mockResponse) {
       return mockResponse.response
     }
-    
+
     // Return 404 for unmatched URLs
     return new Response('Not Found', { status: 404 })
   }
 
   globalThis.fetch = mockFetch
-  
+
   return () => {
     globalThis.fetch = originalFetch
   }

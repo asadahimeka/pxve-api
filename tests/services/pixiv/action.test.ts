@@ -1,5 +1,5 @@
 import { assertEquals, assertExists } from '@std/assert'
-import { pixivActionMap, pixivActionKeys, callPixivAction } from '../../../src/services/pixiv/action.ts'
+import { callPixivAction, pixivActionKeys, pixivActionMap } from '../../../src/services/pixiv/action.ts'
 
 Deno.test('pixivActionMap - contains expected actions', () => {
   const expectedActions = [

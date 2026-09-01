@@ -5,7 +5,7 @@ import { createMockRequest } from '../utils/test-helpers.ts'
 Deno.test('logger middleware - logs requests properly', async () => {
   const logs: string[] = []
   const originalConsoleLog = console.log
-  
+
   console.log = (...args: any[]) => {
     logs.push(args.join(' '))
   }
@@ -15,7 +15,7 @@ Deno.test('logger middleware - logs requests properly', async () => {
     const req = createMockRequest('https://example.com/api/test', {
       headers: { 'user-agent': 'TestAgent' },
     })
-    
+
     const mockCtx = {
       req: {
         header: (name: string) => req.headers.get(name),
@@ -25,7 +25,7 @@ Deno.test('logger middleware - logs requests properly', async () => {
       res: new Response('test', { status: 200 }),
       header: () => {},
     }
-    
+
     const next = async () => {
       mockCtx.res = new Response('test', { status: 200 })
     }

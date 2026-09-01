@@ -4,7 +4,7 @@ import { createMockRequest } from '../utils/test-helpers.ts'
 
 Deno.test('blocker middleware - blocks empty user agent', async () => {
   const middleware = blocker()
-  
+
   const noUaReq = createMockRequest('https://example.com/api/test')
 
   const mockCtx = {
@@ -21,13 +21,13 @@ Deno.test('blocker middleware - blocks empty user agent', async () => {
   }
 
   await middleware(mockCtx as any, next)
-  
+
   assertEquals(blocked, false)
 })
 
 Deno.test('blocker middleware - allows uptime bot', async () => {
   const middleware = blocker()
-  
+
   const uptimeReq = createMockRequest('https://example.com/api/test', {
     headers: { 'user-agent': 'Uptimebot/1.0' },
   })
@@ -46,7 +46,7 @@ Deno.test('blocker middleware - allows uptime bot', async () => {
   }
 
   await middleware(mockCtx as any, next)
-  
+
   assertEquals(blocked, true)
 })
 

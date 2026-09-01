@@ -23,7 +23,7 @@ pixivApiRoute.get(
       301: z.object(),
     },
   }),
-  c => {
+  (c) => {
     const { type } = c.req.valid('query')
     const query = c.req.query()
     delete query.type
@@ -31,7 +31,7 @@ pixivApiRoute.get(
     let redirectUrl = `/api/pixiv/${type}`
     if (search.size > 0) redirectUrl += `?${search}`
     return c.redirect(redirectUrl, 301)
-  }
+  },
 )
 
 pixivApiRoute.get(
@@ -51,7 +51,7 @@ pixivApiRoute.get(
       200: z.object(),
     },
   }),
-  async c => {
+  async (c) => {
     const { key } = c.req.valid('param')
     const query = c.req.query()
 
@@ -70,5 +70,5 @@ pixivApiRoute.get(
       console.error('[ERROR]:', new Date().toLocaleString('zh'), c.req.method, c.req.url, msg)
       return c.json(msg, 500)
     }
-  }
+  },
 )

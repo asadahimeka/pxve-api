@@ -1,5 +1,5 @@
 import { assertEquals, assertExists, assertRejects } from '@std/assert'
-import { objectToQueryString, getSessionUserMeta } from '../../../src/services/pixiv/pixiv-now.ts'
+import { getSessionUserMeta, objectToQueryString } from '../../../src/services/pixiv/pixiv-now.ts'
 
 Deno.test('pixiv-now - objectToQueryString handles empty params', () => {
   const result = objectToQueryString(undefined)
@@ -26,7 +26,7 @@ Deno.test('pixiv-now - getSessionUserMeta parses legacy global meta', () => {
       </head>
     </html>
   `
-  
+
   const result = getSessionUserMeta(html)
   assertEquals(result.userData.id, 123)
   assertEquals(result.userData.name, 'test')
@@ -35,7 +35,7 @@ Deno.test('pixiv-now - getSessionUserMeta parses legacy global meta', () => {
 
 Deno.test('pixiv-now - getSessionUserMeta throws on invalid meta', () => {
   const html = '<html><head></head><body>no meta</body></html>'
-  
+
   let threw = false
   try {
     getSessionUserMeta(html)

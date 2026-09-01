@@ -4,9 +4,9 @@ import { recoverPidImage } from '../../../src/services/pixiv/pid-recover.ts'
 Deno.test('pid-recover service - recoverPidImage returns null when no results', async () => {
   const originalFetch = globalThis.fetch
   globalThis.fetch = async (): Promise<Response> => {
-    return new Response(JSON.stringify([]), { 
+    return new Response(JSON.stringify([]), {
       status: 200,
-      headers: { 'content-type': 'application/json' }
+      headers: { 'content-type': 'application/json' },
     })
   }
 
@@ -21,7 +21,7 @@ Deno.test('pid-recover service - recoverPidImage returns null when no results', 
 Deno.test('pid-recover service - recovers image from danbooru', async () => {
   const originalFetch = globalThis.fetch
   let callCount = 0
-  
+
   globalThis.fetch = async (): Promise<Response> => {
     callCount++
     const mockData = [{
@@ -30,13 +30,13 @@ Deno.test('pid-recover service - recovers image from danbooru', async () => {
       created_at: '2024-01-01',
       file_url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
       media_asset: {
-        variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }]
-      }
+        variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }],
+      },
     }]
-    
+
     return new Response(JSON.stringify(mockData), {
       status: 200,
-      headers: { 'content-type': 'application/json' }
+      headers: { 'content-type': 'application/json' },
     })
   }
 
@@ -51,7 +51,7 @@ Deno.test('pid-recover service - recovers image from danbooru', async () => {
 Deno.test('pid-recover service - queries multiple sources', async () => {
   const originalFetch = globalThis.fetch
   let callCount = 0
-  
+
   globalThis.fetch = async (): Promise<Response> => {
     callCount++
     if (callCount === 1) {
@@ -63,8 +63,8 @@ Deno.test('pid-recover service - queries multiple sources', async () => {
       created_at: '2024-01-01',
       file_url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
       media_asset: {
-        variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }]
-      }
+        variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }],
+      },
     }]
     return new Response(JSON.stringify(mockData), { status: 200 })
   }

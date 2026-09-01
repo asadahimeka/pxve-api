@@ -53,13 +53,13 @@ export async function fetchPximgByPidPath(path: string) {
   const webRes = await pixivWebApi.illustPages(+id).catch(() => null)
   if (webRes) {
     images = webRes.map(
-      e =>
+      (e) =>
         ({
           s: getImgPath(e.urls.thumb_mini),
           m: getImgPath(e.urls.small),
           l: getImgPath(e.urls.regular),
           o: getImgPath(e.urls.original),
-        }) as any
+        }) as any,
     )
     src = images[part]?.[size]
     if (src && !src.includes('common/images/limit')) {
@@ -71,7 +71,7 @@ export async function fetchPximgByPidPath(path: string) {
   if (recRes) {
     const recImages = JSON.parse(recRes)
     if (Array.isArray(recImages)) {
-      images = recImages.map(e => {
+      images = recImages.map((e) => {
         const o = e.fileUrl
         const m = e.sampleUrl || o
         return { s: m, m, l: o, o } as any

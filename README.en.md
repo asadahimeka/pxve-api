@@ -16,15 +16,15 @@ API Documentation: [api.pxve.cc/docs](https://api.pxve.cc/docs)
 
 ## ✨ Features
 
-* 🎨 **Pixiv API** - Supports Pixiv App API and Web API
-* 🔌 **HibiAPI Compatibility** - Pixiv endpoints are compatible with the [HibiAPI](https://github.com/mixmoe/HibiAPI) format
-* 🎬 **Animated Image Processing** - Ugoira animation conversion
-* 📚 **Novel Translation** - Pixiv novel translation support
-* 🖼️ **Image Processing** - WebP conversion, image proxy
-* 🔍 **Image Search** - Integrated SauceNAO API
-* 🔐 **Security Protection** - Rate limiting, domain whitelist, UA blacklist
-* 📖 **API Documentation** - Integrated Swagger UI and Scalar documentation
-* 🐳 **Docker Support** - Docker deployment provided
+- 🎨 **Pixiv API** - Supports Pixiv App API and Web API
+- 🔌 **HibiAPI Compatibility** - Pixiv endpoints are compatible with the [HibiAPI](https://github.com/mixmoe/HibiAPI) format
+- 🎬 **Animated Image Processing** - Ugoira animation conversion
+- 📚 **Novel Translation** - Pixiv novel translation support
+- 🖼️ **Image Processing** - WebP conversion, image proxy
+- 🔍 **Image Search** - Integrated SauceNAO API
+- 🔐 **Security Protection** - Rate limiting, domain whitelist, UA blacklist
+- 📖 **API Documentation** - Integrated Swagger UI and Scalar documentation
+- 🐳 **Docker Support** - Docker deployment provided
 
 ## 🚀 Quick Start
 
@@ -106,37 +106,37 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 
 After starting the service, the API documentation can be accessed at:
 
-* **Scalar Docs (Recommended)**: [http://localhost:3021/docs](http://localhost:3021/docs)
-* **Swagger UI**: [http://localhost:3021/swagger](http://localhost:3021/swagger)
-* **HibiAPI Compatible Docs**: [http://localhost:3021/docs/hibiapi](http://localhost:3021/docs/hibiapi)
+- **Scalar Docs (Recommended)**: [http://localhost:3021/docs](http://localhost:3021/docs)
+- **Swagger UI**: [http://localhost:3021/swagger](http://localhost:3021/swagger)
+- **HibiAPI Compatible Docs**: [http://localhost:3021/docs/hibiapi](http://localhost:3021/docs/hibiapi)
 
 ## 🔗 API Endpoints
 
 ### Pixiv Related
 
-* `GET /api/pixiv/*` - Pixiv App API
-* `GET /api/pixivision` - Pixivision API
-* `GET /api/pixiv-now/http` - Pixiv Web API
-* `GET /api/pixiv-novel-translate` - Novel translation
-* `GET /pid` - Find Pixiv images by PID
-* `GET /api/pid-recover` - Find Pixiv image mirrors by PID
+- `GET /api/pixiv/*` - Pixiv App API
+- `GET /api/pixivision` - Pixivision API
+- `GET /api/pixiv-now/http` - Pixiv Web API
+- `GET /api/pixiv-novel-translate` - Novel translation
+- `GET /pid` - Find Pixiv images by PID
+- `GET /api/pid-recover` - Find Pixiv image mirrors by PID
 
 ### Media Processing
 
-* `GET /api/ugoira` - Ugoira animation processing
-* `GET /api/webp` - WebP conversion
-* `GET /pximg` - pximg image proxy
+- `GET /api/ugoira` - Ugoira animation processing
+- `GET /api/webp` - WebP conversion
+- `GET /pximg` - pximg image proxy
 
 ### Third-party Integrations
 
-* `GET /api/sauce/` - Image search
-* `GET /api/ai-image-detect` - AI image detection
-* `GET /api/x/media` - Fetch X user media tweets, see [reference documentation](./src/services/x-media/README.md)
+- `GET /api/sauce/` - Image search
+- `GET /api/ai-image-detect` - AI image detection
+- `GET /api/x/media` - Fetch X user media tweets, see [reference documentation](./src/services/x-media/README.md)
 
 ### Other Endpoints
 
-* `GET /proxy/*` - CORS proxy
-* HibiAPI compatible endpoints
+- `GET /proxy/*` - CORS proxy
+- HibiAPI compatible endpoints
 
 ## 🛠️ Development Commands
 
@@ -180,13 +180,13 @@ pxve-api/
 
 ## 🔧 Tech Stack
 
-* **Runtime**: Deno
-* **Framework**: Hono
-* **API Documentation**: Swagger UI + Scalar
-* **Image Processing**: Sharp
-* **HTML Parsing**: Cheerio
-* **Data Validation**: Zod
-* **Type Safety**: TypeScript
+- **Runtime**: Deno
+- **Framework**: Hono
+- **API Documentation**: Swagger UI + Scalar
+- **Image Processing**: Sharp
+- **HTML Parsing**: Cheerio
+- **Data Validation**: Zod
+- **Type Safety**: TypeScript
 
 ## 🤝 Contributing
 
@@ -194,8 +194,8 @@ Issues and Pull Requests are welcome!
 
 ## 🔗 Related Projects
 
-* [Pixiv Viewer](https://github.com/asadahimeka/pixiv-viewer) - Frontend application
-* [HibiAPI](https://github.com/mixmoe/HibiAPI) - Reference API implementation
+- [Pixiv Viewer](https://github.com/asadahimeka/pixiv-viewer) - Frontend application
+- [HibiAPI](https://github.com/mixmoe/HibiAPI) - Reference API implementation
 
 ## ⚠️ Notes
 

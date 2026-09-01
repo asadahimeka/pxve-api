@@ -29,7 +29,7 @@ export const pidRecoverRoute = new Hono().get(
       }),
     },
   }),
-  async c => {
+  async (c) => {
     const { id } = c.req.valid('param')
     const body = await recoverPidImage(id)
     if (!body) return c.notFound()
@@ -37,5 +37,5 @@ export const pidRecoverRoute = new Hono().get(
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'max-age=86400',
     })
-  }
+  },
 )

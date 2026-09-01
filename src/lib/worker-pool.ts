@@ -2,10 +2,10 @@ const configuredQueueMax = Number(Deno.env.get('WORKER_QUEUE_MAX'))
 const WORKER_QUEUE_MAX =
   Number.isFinite(configuredQueueMax) && configuredQueueMax > 0 ? Math.floor(configuredQueueMax) : 200
 
-interface Task<T = unknown> {
-  data: T
-  resolve: (value: unknown) => void
-  reject: (reason?: unknown) => void
+interface Task {
+  data: any
+  resolve: (value: any) => void
+  reject: (reason?: any) => void
 }
 
 export class WorkerPool {
@@ -84,8 +84,8 @@ export class WorkerPool {
     }, 30_000)
   }
 
-  addTask(data: unknown) {
-    return new Promise((resolve, reject) => {
+  addTask(data: any) {
+    return new Promise<any>((resolve, reject) => {
       if (this.taskQueue.length >= WORKER_QUEUE_MAX) {
         reject(new Error('Worker queue full'))
         return
