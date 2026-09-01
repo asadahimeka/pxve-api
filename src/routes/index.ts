@@ -4,6 +4,8 @@ import { aiImageDetectRoute } from './ai-image-detect/index.ts'
 import { pixivApiRoute } from './pixiv/index.ts'
 import { pixivApiProxyRoute } from './pixiv/app-api-proxy.ts'
 import { hibiapiFallbackRoute } from './hibiapi-fallback/index.ts'
+import { qrcodeRoute } from './qrcode/index.ts'
+import { wallpaperRoute } from './wallpaper/index.ts'
 import { saucenaoRoute } from './saucenao/index.ts'
 import { pixivTranslateNovelRoute } from './pixiv/novel-translate.ts'
 import { pidRecoverRoute } from './pixiv/pid-recover.ts'
@@ -28,6 +30,8 @@ export const routes = new Hono()
   .route('/api', webpConvertRoute)
   .route('/api', aiImageDetectRoute)
   .route('/api', xMediaRoute)
+  .route('/api', qrcodeRoute)
+  .route('/api', wallpaperRoute)
   .route('/', pximgRoute)
   .route('/', pixivApiProxyRoute)
   .route('/', hibiapiFallbackRoute)

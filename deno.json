@@ -29,6 +29,7 @@
     "isbot": "npm:isbot@^5.2.1",
     "qs": "npm:qs@^6.15.3",
     "sharp": "npm:sharp@^0.35.4",
+    "qrcode": "npm:qrcode@^1.5.3",
     "zod": "npm:zod@^4.3.5"
   },
   "compilerOptions": {

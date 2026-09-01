@@ -1,5 +1,5 @@
 import { assertEquals } from '@std/assert'
-import { sanitizeUrl, sanitizeError } from '@lib/sanitize.ts'
+import { sanitizeError, sanitizeUrl } from '@lib/sanitize.ts'
 
 Deno.test('sanitize api_key', () => {
   assertEquals(
