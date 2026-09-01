@@ -25,4 +25,4 @@ COPY . .
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
 # RUN deno cache main.js
 
-CMD ["run","--env","--allow-net","--allow-env","--allow-read","--allow-write","--allow-run=zipinfo,unzip,ffmpeg,python","./src/app.ts"]
+CMD ["run", "--env", "--allow-all", "./src/app.ts"]

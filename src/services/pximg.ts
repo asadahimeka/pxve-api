@@ -1,10 +1,11 @@
+import { proxy } from 'hono/proxy'
 import { UA_HEADER } from '@lib/const.ts'
 import { callPixivAction } from './pixiv/action.ts'
 import { pixivWebApi } from './pixiv/web-api.ts'
 import { recoverPidImage } from './pixiv/pid-recover.ts'
 
 export async function fetchPximg(path: string) {
-  const resp = await fetch(`https://i.pximg.net${path}`, {
+  const resp = await proxy(`https://i.pximg.net${path}`, {
     headers: {
       Referer: 'https://www.pixiv.net/',
       ...UA_HEADER,

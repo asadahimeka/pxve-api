@@ -1,3 +1,4 @@
+import { proxy } from 'hono/proxy'
 import { PIXIV_API_HEADERS } from '@lib/const.ts'
 
 export async function pixivApiProxy(reqUrl: string, req: Request) {
@@ -21,11 +22,13 @@ export async function pixivApiProxy(reqUrl: string, req: Request) {
     if (val) headers[key] = val
   })
 
-  const resp = await fetch(url.href, {
+  const resp = await proxy(url.href, {
     method: req.method,
     body: req.body,
     headers,
   })
+
+  resp.headers.delete('Set-Cookie')
 
   return resp
 }

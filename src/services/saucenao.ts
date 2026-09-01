@@ -1,3 +1,4 @@
+import { proxy } from 'hono/proxy'
 import { MAX_DOWNLOAD_BYTES, SAUCENAO_API_KEY, UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
@@ -30,7 +31,7 @@ export async function saucenaoSearch(file: string | Blob) {
     form.set('file', file)
   }
 
-  const response = await fetch('https://saucenao.com/search.php', {
+  const response = await proxy('https://saucenao.com/search.php', {
     method: 'POST',
     body: form,
     headers: {

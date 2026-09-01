@@ -1,3 +1,4 @@
+import { proxy } from 'hono/proxy'
 import { MAX_DOWNLOAD_BYTES, UA_HEADER } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
@@ -20,7 +21,7 @@ export async function illuminartyImageAnalysis(url: string) {
   const form = new FormData()
   form.append('file', file)
 
-  const response = await fetch('https://app.illuminarty.ai/api/analysis/image', {
+  const response = await proxy('https://app.illuminarty.ai/api/analysis/image', {
     method: 'POST',
     body: form,
     headers: {

@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
+import { proxy } from 'hono/proxy'
 import { HIBIAPI_BASE, UA_HEADER } from '@lib/const.ts'
 
 export const hibiapiFallbackRoute = new Hono().on(
@@ -32,6 +33,6 @@ export const hibiapiFallbackRoute = new Hono().on(
     url.protocol = 'https:'
     url.port = ''
     url.host = HIBIAPI_BASE
-    return fetch(url, { headers: UA_HEADER })
+    return proxy(url, { headers: UA_HEADER })
   }
 )

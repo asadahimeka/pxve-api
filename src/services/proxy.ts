@@ -1,3 +1,4 @@
+import { proxy } from 'hono/proxy'
 import { MAX_DOWNLOAD_BYTES, PIXIV_COOKIE } from '@lib/const.ts'
 import { assertSafeUrl } from '@lib/ssrf-guard.ts'
 
@@ -65,7 +66,7 @@ export async function commonProxy(req: Request) {
     reqHeaders.set('cookie', PIXIV_COOKIE)
   }
 
-  const resp = await fetch(new Request(reqUrl, req), { headers: reqHeaders })
+  const resp = await proxy(new Request(reqUrl, req), { headers: reqHeaders })
 
   const contentLength = resp.headers.get('content-length')
   if (contentLength) {
