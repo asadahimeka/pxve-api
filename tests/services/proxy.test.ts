@@ -8,7 +8,7 @@ Deno.test('proxy service - basic proxy functionality', async () => {
 
   const originalFetch = globalThis.fetch
   globalThis.fetch = async (input: RequestInfo | URL): Promise<Response> => {
-    const urlStr = input instanceof Request ? input.url : (typeof input === 'string' ? input : input.toString())
+    const urlStr = input instanceof Request ? input.url : typeof input === 'string' ? input : input.toString()
     if (urlStr.includes('example.com/target')) {
       return new Response(mockContent, {
         status: 200,

@@ -11,7 +11,7 @@ export class RequestDeduper {
 
   run(key: string, fn: (...args: any[]) => Response | Promise<Response>) {
     if (this.map.has(key)) {
-      return this.map.get(key)!.then((res) => res.clone())
+      return this.map.get(key)!.then(res => res.clone())
     }
 
     if (this.map.size >= DEDUPER_MAX) {

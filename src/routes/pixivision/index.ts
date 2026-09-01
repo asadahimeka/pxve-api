@@ -56,11 +56,11 @@ pixivisionRoute.get(
       200: PixivisionListResponse,
     },
   }),
-  async (c) => {
+  async c => {
     const query = c.req.valid('query')
     const data = await fetchPixivisionList(query)
     return c.json(data, 200, { 'Cache-Control': 'max-age=21600' })
-  },
+  }
 )
 
 pixivisionRoute.get(
@@ -79,11 +79,11 @@ pixivisionRoute.get(
       200: PixivisionListResponse,
     },
   }),
-  async (c) => {
+  async c => {
     const query = c.req.valid('query')
     const data = await fetchPixivisionList(query)
     return c.json(data, 200, { 'Cache-Control': 'max-age=21600' })
-  },
+  }
 )
 
 pixivisionRoute.get(
@@ -108,11 +108,11 @@ pixivisionRoute.get(
       }),
     },
   }),
-  async (c) => {
+  async c => {
     const query = c.req.valid('query')
     const data = await fetchPixivisionDetailContent(query)
     return c.json(data, 200, { 'Cache-Control': 'max-age=21600' })
-  },
+  }
 )
 
 pixivisionRoute.get(
@@ -142,7 +142,7 @@ pixivisionRoute.get(
             user_id: z.string(),
             user_name: z.string(),
             user_avatar: z.url(),
-          }),
+          })
         ),
         tags: z.array(z.object({ id: z.string(), name: z.string() })),
         related_latest: z.object(),
@@ -150,10 +150,10 @@ pixivisionRoute.get(
       }),
     },
   }),
-  async (c) => {
+  async c => {
     const { id } = c.req.valid('param')
     const query = c.req.valid('query')
     const data = await fetchPixivisionDetail(id, query)
     return c.json(data, 200, { 'Cache-Control': 'max-age=21600' })
-  },
+  }
 )

@@ -41,12 +41,12 @@ export const ugoiraRoute = new Hono().get(
       },
     },
   }),
-  async (c) => {
+  async c => {
     const { id } = c.req.valid('param')
     const { zip, rate } = c.req.valid('query')
 
     const { data, headers } = await convertUgoira(id, zip, rate)
 
     return c.body(data, 200, headers)
-  },
+  }
 )

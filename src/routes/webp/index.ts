@@ -23,7 +23,7 @@ export const webpConvertRoute = new Hono().get(
       },
     },
   }),
-  async (c) => {
+  async c => {
     try {
       const { data, headers } = await convertWebP(c.req.url)
       return c.body(data, 200, headers)
@@ -34,5 +34,5 @@ export const webpConvertRoute = new Hono().get(
       }
       return c.json({ error: 'WebP conversion error' }, 502)
     }
-  },
+  }
 )

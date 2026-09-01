@@ -67,7 +67,7 @@ const setCacheKey = async (metadataCache: Cache, key: string, { isDelete = false
   let keys = await getCacheKeys(metadataCache)
   if (!keys) keys = []
   if (isDelete) {
-    keys = keys.filter((e) => e != key)
+    keys = keys.filter(e => e != key)
   } else {
     keys.push(key)
   }
@@ -75,7 +75,7 @@ const setCacheKey = async (metadataCache: Cache, key: string, { isDelete = false
     cacheKeysKey,
     new Response(JSON.stringify(keys), {
       headers: { 'Content-Type': 'application/json' },
-    }),
+    })
   )
 }
 
@@ -99,12 +99,12 @@ const cleanExpiredEntries = async (cache: Cache, metadataCache: Cache, now: numb
     }
     // Delete expired entries from both caches
     await Promise.all(
-      expiredKeys.map(async (key) => {
+      expiredKeys.map(async key => {
         const metadataKey = getMetadataKey(key)
         await cache.delete(key)
         await metadataCache.delete(metadataKey)
         await setCacheKey(metadataCache, key, { isDelete: true })
-      }),
+      })
     )
   } catch (error) {
     console.error('Error cleaning expired cache entries:', error)
@@ -118,7 +118,7 @@ const enforceCacheSizeLimit = async (
   cache: Cache,
   metadataCache: Cache,
   maxSizeBytes: number | undefined,
-  maxEntries: number | undefined,
+  maxEntries: number | undefined
 ): Promise<void> => {
   if (!maxSizeBytes && !maxEntries) return
   console.log('[cache-middleware]: enforce cache size limit (LRU)')
@@ -155,12 +155,12 @@ const enforceCacheSizeLimit = async (
     }
     // Batch delete all excess entries at once
     await Promise.all(
-      entriesToDelete.map(async (key) => {
+      entriesToDelete.map(async key => {
         const metadataKey = getMetadataKey(key)
         await cache.delete(key)
         await metadataCache.delete(metadataKey)
         await setCacheKey(metadataCache, key, { isDelete: true })
-      }),
+      })
     )
   } catch (error) {
     console.error('Error enforcing cache size limit:', error)
@@ -177,8 +177,8 @@ const startBackgroundCleanup = (
     maxSizeBytes?: number
     maxEntries?: number
     cleanupInterval?: number
-  },
-): () => void => {
+  }
+): (() => void) => {
   const { maxAge, maxSizeBytes, maxEntries, cleanupInterval = 5 * 60 * 1000 } = options
   if (!maxAge && !maxSizeBytes && !maxEntries) {
     return () => {} // No cleanup needed
@@ -271,10 +271,10 @@ export const cache = (options: {
 
   const { maxAge, maxSizeBytes, maxEntries, cleanupInterval = 5 * 60 * 1000 } = options
 
-  const cacheControlDirectives = options.cacheControl?.split(',').map((directive) => directive.toLowerCase())
+  const cacheControlDirectives = options.cacheControl?.split(',').map(directive => directive.toLowerCase())
   const varyDirectives = Array.isArray(options.vary)
     ? options.vary
-    : options.vary?.split(',').map((directive) => directive.trim())
+    : options.vary?.split(',').map(directive => directive.trim())
   // RFC 7231 Section 7.1.4 specifies that "*" is not allowed in Vary header.
   if (options.vary?.includes('*')) {
     throw new Error('Middleware vary configuration cannot include "*", as it disallows effective caching.')
@@ -284,10 +284,11 @@ export const cache = (options: {
 
   const addHeader = (c: Context) => {
     if (cacheControlDirectives) {
-      const existingDirectives = c.res.headers
-        .get('Cache-Control')
-        ?.split(',')
-        .map((d) => d.trim().split('=', 1)[0]) ?? []
+      const existingDirectives =
+        c.res.headers
+          .get('Cache-Control')
+          ?.split(',')
+          .map(d => d.trim().split('=', 1)[0]) ?? []
 
       for (const directive of cacheControlDirectives) {
         let [name, value] = directive.trim().split('=', 2)
@@ -299,12 +300,13 @@ export const cache = (options: {
     }
 
     if (varyDirectives) {
-      const existingDirectives = c.res.headers
-        .get('Vary')
-        ?.split(',')
-        .map((d) => d.trim()) ?? []
+      const existingDirectives =
+        c.res.headers
+          .get('Vary')
+          ?.split(',')
+          .map(d => d.trim()) ?? []
       const vary = Array.from(
-        new Set([...existingDirectives, ...varyDirectives].map((directive) => directive.toLowerCase())),
+        new Set([...existingDirectives, ...varyDirectives].map(directive => directive.toLowerCase()))
       ).sort()
       if (vary.includes('*')) {
         c.header('Vary', '*')
@@ -325,7 +327,7 @@ export const cache = (options: {
     // Sanitize sensitive query params and mask auth header presence
     key = sanitizeUrl(key)
     const hasAuth = Boolean(
-      c.req.header('authorization') || c.req.header('x-auth') || c.req.header('cookie')?.includes('PHPSESSID'),
+      c.req.header('authorization') || c.req.header('x-auth') || c.req.header('cookie')?.includes('PHPSESSID')
     )
     key = `${key}&auth=${hasAuth ? '1' : '0'}`
 
@@ -351,7 +353,7 @@ export const cache = (options: {
       shouldBypass = await options.shouldBypassCache(c)
     } else {
       shouldBypass = Boolean(
-        c.req.header('authorization') || c.req.header('x-auth') || c.req.header('cookie')?.includes('PHPSESSID'),
+        c.req.header('authorization') || c.req.header('x-auth') || c.req.header('cookie')?.includes('PHPSESSID')
       )
     }
     // I1: Bypass cache if URL contains sensitive query parameter names
@@ -386,7 +388,7 @@ export const cache = (options: {
             metadataKey,
             new Response(JSON.stringify(cachedMetadata), {
               headers: { 'Content-Type': 'application/json' },
-            }),
+            })
           )
         }
         return new Response(response.body, response)
@@ -446,7 +448,7 @@ export const cache = (options: {
       metadataKey,
       new Response(JSON.stringify(metadata), {
         headers: { 'Content-Type': 'application/json' },
-      }),
+      })
     )
     await setCacheKey(metadataCache, key)
   }
@@ -493,7 +495,7 @@ export const deleteCacheEntry = async (cacheName: string, key: string): Promise<
  * Get cache statistics
  */
 export const getCacheStats = async (
-  cacheName: string,
+  cacheName: string
 ): Promise<{
   count: number
   totalSize: number
@@ -558,7 +560,7 @@ export const getCacheStats = async (
 export const revalidateCacheEntry = async (
   cacheName: string,
   key: string,
-  fetchFn: () => Promise<Response>,
+  fetchFn: () => Promise<Response>
 ): Promise<Response> => {
   console.log(`[cache-middleware]: revalidate cache entry "${key}" of "${cacheName}" `)
   try {
@@ -591,7 +593,7 @@ export const revalidateCacheEntry = async (
       getMetadataKey(key),
       new Response(JSON.stringify(metadata), {
         headers: { 'Content-Type': 'application/json' },
-      }),
+      })
     )
     return response
   } catch (error) {

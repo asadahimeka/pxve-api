@@ -30,7 +30,7 @@ pixivNowRoute.on(
       200: z.object(),
     },
   }),
-  async (c) => {
+  async c => {
     const slug = c.req.path.replace('/api/pixiv-now/http', '')
     if (!slug || !/(^\/ajax|rpc)|(.+\.php$)/i.test(slug)) return
 
@@ -44,7 +44,7 @@ pixivNowRoute.on(
 
     const token = getCookie(c, 'PHPSESSID') || c.req.header('x-auth')
     return c.json(data, 200, { 'Cache-Control': token ? 'no-store' : 'max-age=3600' })
-  },
+  }
 )
 
 pixivNowRoute.get(
@@ -83,12 +83,12 @@ pixivNowRoute.get(
             user_name: z.string(),
             illust_page_count: z.int().positive(),
             x_restrict: z.enum(['0', '1', '2']),
-          }),
+          })
         ),
       }),
     },
   }),
-  async (c) => {
+  async c => {
     const query = c.req.valid('query')
 
     const { data } = await request({
@@ -104,7 +104,7 @@ pixivNowRoute.get(
     })
 
     return c.json(data, 200, { 'Cache-Control': 'max-age=86400' })
-  },
+  }
 )
 
 pixivNowRoute.get(
@@ -125,7 +125,7 @@ pixivNowRoute.get(
       401: z.object(),
     },
   }),
-  async (c) => {
+  async c => {
     const token = getCookie(c, 'PHPSESSID') || c.req.header('x-auth')
     if (!token) return c.json({ error: '未配置用户密钥' }, 401)
 
@@ -140,5 +140,5 @@ pixivNowRoute.get(
       'Set-Cookie': `CSRFTOKEN=${meta.token}; path=/; secure`,
       'Cache-Control': 'no-store',
     })
-  },
+  }
 )

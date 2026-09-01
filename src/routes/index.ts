@@ -16,7 +16,7 @@ import { xMediaRoute } from './x-media/index.ts'
 import { proxyRoute } from './cors-proxy/index.ts'
 
 export const routes = new Hono()
-  .get('/', (c) => c.html('<h2>Ciallo～(∠・ω< )⌒☆</h2><a href="/docs">API Document</a>'))
+  .get('/', c => c.html('<h2>Ciallo～(∠・ω< )⌒☆</h2><a href="/docs">API Document</a>'))
   .route('/api', ugoiraRoute)
   .route('/api', saucenaoRoute)
   .route('/api', pixivApiRoute)

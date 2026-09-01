@@ -19,7 +19,7 @@ const SauceNAOResponseSchema = z.object({
         gelbooru_id: z.string(),
         pixiv_id: z.string(),
       }),
-    }),
+    })
   ),
 })
 
@@ -39,7 +39,7 @@ export const saucenaoRoute = new Hono()
       },
       responses: { 200: SauceNAOResponseSchema },
     }),
-    async (c) => {
+    async c => {
       const { url } = c.req.valid('query')
       try {
         const resp = await saucenaoSearch(url)
@@ -49,7 +49,7 @@ export const saucenaoRoute = new Hono()
         if (msg.startsWith('blocked')) return c.json({ error: msg }, 400)
         return c.json({ error: 'Upstream fetch failed' }, 502)
       }
-    },
+    }
   )
   .post(
     '/sauce/',
@@ -76,9 +76,9 @@ export const saucenaoRoute = new Hono()
     }),
     bodyLimit({
       maxSize: 5 * 1024 * 1024, // 5MB
-      onError: (c) => c.json({ error: 'File too large' }, 413),
+      onError: c => c.json({ error: 'File too large' }, 413),
     }),
-    async (c) => {
+    async c => {
       const reqBody = await c.req.parseBody()
       const file = reqBody.file
 
@@ -98,5 +98,5 @@ export const saucenaoRoute = new Hono()
         if (msg.startsWith('blocked')) return c.json({ error: msg }, 400)
         return c.json({ error: 'Upstream fetch failed' }, 502)
       }
-    },
+    }
   )

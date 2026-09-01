@@ -28,7 +28,7 @@ Deno.test('memdb - set with expiration time', async () => {
   memdb.set('expiring-key', 'expires-soon', 1)
   const result = memdb.get('expiring-key')
   assertEquals(result, 'expires-soon')
-  await new Promise((resolve) => setTimeout(resolve, 1100))
+  await new Promise(resolve => setTimeout(resolve, 1100))
   const expiredResult = memdb.get('expiring-key', 'default-after-expire')
   assertEquals(expiredResult, 'default-after-expire')
 })

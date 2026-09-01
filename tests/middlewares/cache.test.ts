@@ -30,7 +30,7 @@ const getMetadataKey = (key: string): string => {
 
 Deno.test('shouldSkipCache - returns true for Vary: *', () => {
   const response = new Response('test', {
-    headers: { 'Vary': '*' },
+    headers: { Vary: '*' },
   })
   assertEquals(shouldSkipCache(response), true)
 })

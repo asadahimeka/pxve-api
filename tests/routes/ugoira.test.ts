@@ -48,7 +48,7 @@ Deno.test('routes/ugoira - accepts optional zip and rate params', async () => {
     'https://localhost:3021/api/ugoira/123456.mp4?zip=https://example.com/test.zip&rate=16',
     {
       headers: { 'user-agent': BROWSER_UA },
-    },
+    }
   )
 
   const res = await app.fetch(req)

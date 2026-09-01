@@ -24,15 +24,17 @@ Deno.test('pid-recover service - recovers image from danbooru', async () => {
 
   globalThis.fetch = async (): Promise<Response> => {
     callCount++
-    const mockData = [{
-      source: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
-      tag_string: 'tag1 tag2',
-      created_at: '2024-01-01',
-      file_url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
-      media_asset: {
-        variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }],
+    const mockData = [
+      {
+        source: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
+        tag_string: 'tag1 tag2',
+        created_at: '2024-01-01',
+        file_url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
+        media_asset: {
+          variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }],
+        },
       },
-    }]
+    ]
 
     return new Response(JSON.stringify(mockData), {
       status: 200,
@@ -57,15 +59,17 @@ Deno.test('pid-recover service - queries multiple sources', async () => {
     if (callCount === 1) {
       return new Response(JSON.stringify([]), { status: 200 })
     }
-    const mockData = [{
-      source: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
-      tag_string: 'tag1 tag2',
-      created_at: '2024-01-01',
-      file_url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
-      media_asset: {
-        variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }],
+    const mockData = [
+      {
+        source: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
+        tag_string: 'tag1 tag2',
+        created_at: '2024-01-01',
+        file_url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg',
+        media_asset: {
+          variants: [{ url: 'https://i.pixiv.net/img-original/img/2024/01/01/00/00/00/12345678_p0.jpg' }],
+        },
       },
-    }]
+    ]
     return new Response(JSON.stringify(mockData), { status: 200 })
   }
 

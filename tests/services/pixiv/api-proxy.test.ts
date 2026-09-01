@@ -5,7 +5,7 @@ Deno.test('pixiv-api-proxy - throws on unknown path', async () => {
   await assertRejects(
     () => pixivApiProxy('https://example.com/unknown/path', new Request('https://example.com/')),
     Error,
-    'Not found',
+    'Not found'
   )
 })
 
@@ -50,7 +50,7 @@ Deno.test('pixiv-api-proxy - forwards auth headers', async () => {
   let capturedHeaders: Record<string, string> = {}
 
   globalThis.fetch = async (_input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    capturedHeaders = init?.headers as Record<string, string> || {}
+    capturedHeaders = (init?.headers as Record<string, string>) || {}
     return new Response('mock', { status: 200 })
   }
 

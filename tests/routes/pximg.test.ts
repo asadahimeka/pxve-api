@@ -9,7 +9,7 @@ Deno.test('routes/pximg - valid path returns image', async () => {
     'https://localhost:3021/pximg/c/540x540_70/img-master/img/2025/12/18/00/00/34/138723545_p0_master1200.jpg',
     {
       headers: { 'user-agent': BROWSER_UA },
-    },
+    }
   )
 
   const res = await app.fetch(req)

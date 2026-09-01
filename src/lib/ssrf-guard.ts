@@ -127,10 +127,7 @@ async function resolveAndCheck(hostname: string): Promise<string[]> {
   }
 }
 
-export async function assertSafeUrl(
-  input: string,
-  opts?: { allowPrivate?: boolean },
-): Promise<URL> {
+export async function assertSafeUrl(input: string, opts?: { allowPrivate?: boolean }): Promise<URL> {
   const u = new URL(input)
   if (!['http:', 'https:'].includes(u.protocol)) {
     throw new Error(`blocked protocol: ${u.protocol}`)
@@ -144,20 +141,19 @@ export async function assertSafeUrl(
   const allow = Deno.env
     .get('PROXY_ALLOW_DOMAINS')
     ?.split(',')
-    .map((s) => s.trim())
+    .map(s => s.trim())
     .filter(Boolean)
   if (allow?.length) {
-    const ok = allow.some((d) => d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d)
+    const ok = allow.some(d => (d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d))
     if (!ok) throw new Error(`blocked allowlist: ${u.hostname}`)
   }
-  const block = Deno.env
-    .get('PROXY_BLOCK_DOMAINS')
-    ?.split(',')
-    .map((s) => s.trim())
-    .filter(Boolean) ?? []
-  if (
-    block.some((d) => d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d)
-  ) {
+  const block =
+    Deno.env
+      .get('PROXY_BLOCK_DOMAINS')
+      ?.split(',')
+      .map(s => s.trim())
+      .filter(Boolean) ?? []
+  if (block.some(d => (d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d))) {
     throw new Error(`blocked domain: ${u.hostname}`)
   }
 

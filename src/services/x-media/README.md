@@ -48,6 +48,7 @@ pip install twikit
    - 复制所有相关 Cookie
 
 2. **创建 cookies.json 文件**：
+
    ```bash
    # 复制示例文件
    cp cookies.example.json cookies.json
@@ -131,18 +132,21 @@ python fetch_x_media.py --user elonmusk --cursor "cursor_string"
 ### 常见问题
 
 1. **Cookie 过期**
+
    ```
    错误: Run fetch_x_media cmd failed
    解决: 重新获取最新的 Cookie 并更新 cookies.json
    ```
 
 2. **twikit 未安装**
+
    ```
    ModuleNotFoundError: No module named 'twikit'
    解决: pip install twikit
    ```
 
 3. **用户不存在**
+
    ```
    解决: 检查用户名或用户ID是否正确
    ```
@@ -155,6 +159,7 @@ python fetch_x_media.py --user elonmusk --cursor "cursor_string"
 ### 调试技巧
 
 1. **查看详细错误信息**：
+
    ```bash
    python fetch_x_media.py --user 用户名 2>&1
    ```

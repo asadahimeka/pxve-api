@@ -12,7 +12,7 @@ async function acquireSlot(): Promise<void> {
     activeXMedia++
     return
   }
-  return new Promise<void>((resolve) => {
+  return new Promise<void>(resolve => {
     waitQueue.push(resolve)
   })
 }

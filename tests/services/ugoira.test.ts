@@ -25,19 +25,11 @@ Deno.test('ugoira service - ugoiraExts contains all supported extensions', () =>
 })
 
 Deno.test('ugoira service - convertUgoira throws on invalid ID', async () => {
-  await assertRejects(
-    () => convertUgoira('invalid.mp4'),
-    Error,
-    'Invalid ugoira extension',
-  )
+  await assertRejects(() => convertUgoira('invalid.mp4'), Error, 'Invalid ugoira extension')
 })
 
 Deno.test('ugoira service - convertUgoira throws on missing ID', async () => {
-  await assertRejects(
-    () => convertUgoira(''),
-    Error,
-    'Invalid ugoira extension',
-  )
+  await assertRejects(() => convertUgoira(''), Error, 'Invalid ugoira extension')
 })
 
 Deno.test('isSafeZipEntry blocks path traversal', () => {

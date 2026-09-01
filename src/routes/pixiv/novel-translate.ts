@@ -36,10 +36,10 @@ export const pixivTranslateNovelRoute = new Hono().get(
       },
     },
   }),
-  async (c) => {
+  async c => {
     const { id } = c.req.valid('param')
     const query = c.req.valid('query')
     const { body, headers } = await translatePixivNovel(id, query)
     return c.body(body, 200, headers)
-  },
+  }
 )

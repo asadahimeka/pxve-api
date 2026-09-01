@@ -3,7 +3,7 @@ import { UA_HEADER } from '@lib/const.ts'
 import { objectToQueryString } from './pixiv/pixiv-now.ts'
 
 const languages = ['en', 'zh-tw', 'zh', 'ko', 'th', 'ms', 'ja']
-const getLang = (lang: string) => languages.find((e) => lang.toLowerCase().includes(e)) || 'en'
+const getLang = (lang: string) => languages.find(e => lang.toLowerCase().includes(e)) || 'en'
 
 export async function fetchPixivisionList(query: Record<string, any>) {
   const { type = 'illustration', lang = 'zh', page } = query

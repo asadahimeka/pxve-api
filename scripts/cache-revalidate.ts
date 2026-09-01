@@ -9,7 +9,7 @@ async function main() {
       // e.g. doing a fetch
       const response = await fetch('https://example.com/some-url')
       return new Response(response.body, { status: 200, headers: {} })
-    },
+    }
   )
 }
 

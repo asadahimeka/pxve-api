@@ -17,15 +17,12 @@ export interface TestResponse {
 export function createMockResponse(
   body: string | object,
   status = 200,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): TestResponse {
-  const response = new Response(
-    typeof body === 'string' ? body : JSON.stringify(body),
-    {
-      status,
-      headers: new Headers(headers),
-    },
-  )
+  const response = new Response(typeof body === 'string' ? body : JSON.stringify(body), {
+    status,
+    headers: new Headers(headers),
+  })
 
   return {
     status: response.status,
@@ -38,10 +35,7 @@ export function createMockResponse(
 /**
  * Create a mock Request object for testing
  */
-export function createMockRequest(
-  url: string,
-  options: RequestInit = {},
-): Request {
+export function createMockRequest(url: string, options: RequestInit = {}): Request {
   return new Request(url, {
     headers: {
       'user-agent': 'test-agent',
@@ -54,10 +48,7 @@ export function createMockRequest(
 /**
  * Create a mock Hono context for testing
  */
-export function createMockContext(
-  req: Request,
-  env: Record<string, string> = {},
-) {
+export function createMockContext(req: Request, env: Record<string, string> = {}) {
   const headers = new Headers()
   const status = 200
 
@@ -95,17 +86,13 @@ export function createMockContext(
  * Wait for a specified number of milliseconds
  */
 export function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
  * Assert that a response contains expected properties
  */
-export function assertApiResponse(
-  response: TestResponse,
-  expectedStatus: number,
-  expectedFields?: string[],
-) {
+export function assertApiResponse(response: TestResponse, expectedStatus: number, expectedFields?: string[]) {
   assertEquals(response.status, expectedStatus)
 
   if (expectedFields && response.status === 200) {
@@ -153,7 +140,7 @@ export function createMockFetch(responses: Array<{ url: string; response: Respon
 
   const mockFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString()
-    const mockResponse = responses.find((r) => r.url === url)
+    const mockResponse = responses.find(r => r.url === url)
 
     if (mockResponse) {
       return mockResponse.response

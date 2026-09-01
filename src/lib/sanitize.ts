@@ -20,9 +20,7 @@ export function sanitizeError(err: unknown): string {
   return applySanitize(str)
 }
 
-export function toPublicError(
-  err: unknown,
-): { error: string; requestId: string } {
+export function toPublicError(err: unknown): { error: string; requestId: string } {
   const id = crypto.randomUUID().slice(0, 8)
   console.error(`[${id}]`, sanitizeError(err))
   return { error: 'Internal Server Error', requestId: id }

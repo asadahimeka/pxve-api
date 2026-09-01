@@ -180,11 +180,11 @@ route.get(
       500: z.object({ error: z.string() }),
     },
   }),
-  async (c) => {
+  async c => {
     const { param1, param2 } = c.req.valid('query')
     // Business logic here
     return c.json(result, 200)
-  },
+  }
 )
 ```
 
@@ -222,7 +222,7 @@ if (!token) {
 }
 
 // Use optional chaining for arrays
-const altTokens = PIXIV_ACCOUNT_TOKEN_ALTS?.filter((e) => e && e != token) || []
+const altTokens = PIXIV_ACCOUNT_TOKEN_ALTS?.filter(e => e && e != token) || []
 ```
 
 ### API Integration Patterns
@@ -270,13 +270,7 @@ export function customLogger(): MiddlewareHandler {
     const start = new Date()
     await next()
     const time = `${Date.now() - start.valueOf()}ms`
-    console.log(
-      start.toLocaleString('zh'),
-      ctx.req.method,
-      ctx.res.status,
-      time,
-      ctx.req.url.slice(0, 150),
-    )
+    console.log(start.toLocaleString('zh'), ctx.req.method, ctx.res.status, time, ctx.req.url.slice(0, 150))
   }
 }
 ```
@@ -294,7 +288,7 @@ if (!Deno.args.includes('--dev') && Deno.env.get('ENABLE_CACHE') == '1') {
       maxAge: 600 * 1000,
       maxSizeBytes: 1024 * 1024 * 1024,
       cleanupInterval: 5 * 60 * 1000,
-    }),
+    })
   )
 }
 ```

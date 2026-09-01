@@ -16,7 +16,7 @@ export function isAllowedOrigin(origin: string): boolean {
   if (!list.length) return true
   try {
     const h = new URL(origin).hostname
-    return list.some((d) => (d.startsWith('*.') ? h === d.slice(2) || h.endsWith(d.slice(1)) : h === d))
+    return list.some(d => (d.startsWith('*.') ? h === d.slice(2) || h.endsWith(d.slice(1)) : h === d))
   } catch {
     return false
   }
@@ -30,7 +30,7 @@ function isAccepted(path: string, ua?: string, origin?: string, referer?: string
   if (isbot(ua)) return false
 
   ua = ua.toLowerCase()
-  if (UA_BLACKLIST.some((e) => ua.includes(e.toLowerCase()))) {
+  if (UA_BLACKLIST.some(e => ua.includes(e.toLowerCase()))) {
     return false
   }
 

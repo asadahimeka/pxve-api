@@ -7,23 +7,25 @@ Deno.test('RequestDeduper - deduplicates identical concurrent requests', async (
 
   const mockRequest = async () => {
     callCount++
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 100))
     return new Response(`result-${callCount}`)
   }
 
   const url = 'https://example.com/api/test'
 
   // Start multiple concurrent requests
-  const promises = Array(5).fill(null).map(() => deduper.run(url, mockRequest))
+  const promises = Array(5)
+    .fill(null)
+    .map(() => deduper.run(url, mockRequest))
 
   const responses = await Promise.all(promises)
-  const results = await Promise.all(responses.map((r) => r.text()))
+  const results = await Promise.all(responses.map(r => r.text()))
 
   // Should only call the function once
   assertEquals(callCount, 1)
 
   // All results should be identical
-  results.forEach((result) => assertEquals(result, 'result-1'))
+  results.forEach(result => assertEquals(result, 'result-1'))
 })
 
 Deno.test('RequestDeduper - handles different URLs separately', async () => {
@@ -32,7 +34,7 @@ Deno.test('RequestDeduper - handles different URLs separately', async () => {
 
   const mockRequest = async (url: string) => {
     callCounts[url] = (callCounts[url] || 0) + 1
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await new Promise(resolve => setTimeout(resolve, 50))
     return new Response(`result-${url}-${callCounts[url]}`)
   }
 
@@ -81,7 +83,7 @@ Deno.test('RequestDeduper - cleans up completed requests', async () => {
   await deduper.run(url, mockRequest)
 
   // Wait a bit for cleanup
-  await new Promise((resolve) => setTimeout(resolve, 10))
+  await new Promise(resolve => setTimeout(resolve, 10))
 
   // Request should be cleaned up (implementation specific)
   // This is more of an integration test - the key is that it doesn't throw

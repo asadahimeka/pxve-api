@@ -35,10 +35,10 @@ const srvDefMap = (to: string, aiModel: string) =>
       const resp = await ydTranslate(text)
       return resp
         .map(
-          (line) =>
-            `<p>${line.map((e) => e.srcRuby || '').join('')}</p><p style="color:gray">${
-              line.map((e) => e.res || '').join('')
-            }</p>`,
+          line =>
+            `<p>${line.map(e => e.srcRuby || '').join('')}</p><p style="color:gray">${line
+              .map(e => e.res || '')
+              .join('')}</p>`
         )
         .join('')
     },
@@ -82,15 +82,15 @@ async function fanyi(novelText: string, to: string, srv: string, nots: string[],
         })
         return acc
       },
-      [{ v: '', i: 0 }],
+      [{ v: '', i: 0 }]
     )
-    .map((e) => e.v)
+    .map(e => e.v)
     .slice(1)
   const results: any[] = []
   for (const item of splitTextArr) {
     let text = replaceNovelMark(item)
     if (srv === 'ms') {
-      nots.forEach((e) => {
+      nots.forEach(e => {
         text = text.replaceAll(e, `<span class="notranslate">${e}</span>`)
       })
     }
@@ -109,7 +109,7 @@ async function fanyi(novelText: string, to: string, srv: string, nots: string[],
 }
 
 function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 function replaceNovelMark(text: string) {

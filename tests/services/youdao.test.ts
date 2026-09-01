@@ -8,11 +8,7 @@ Deno.test('youdao service - translate throws on network error', async () => {
   }
 
   try {
-    await assertRejects(
-      () => translate('test'),
-      Error,
-      'Http Request Error',
-    )
+    await assertRejects(() => translate('test'), Error, 'Http Request Error')
   } finally {
     globalThis.fetch = originalFetch
   }

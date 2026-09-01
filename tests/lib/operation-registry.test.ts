@@ -49,7 +49,7 @@ Deno.test('OperationRegistry - triggerAwaitingRejects rejects waiting promises',
   registry.isExecuting('test-key')
   const waitingPromise = registry.isExecuting('test-key') as Promise<any>
   registry.triggerAwaitingRejects('test-key', testError)
-  await waitingPromise.catch((err) => {
+  await waitingPromise.catch(err => {
     assertEquals(err, testError)
   })
 })

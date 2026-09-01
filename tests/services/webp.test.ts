@@ -2,10 +2,7 @@ import { assertEquals, assertRejects } from '@std/assert'
 import { convertWebP } from '../../src/services/webp.ts'
 
 Deno.test('webp service - convertWebP throws on unsupported file type', async () => {
-  await assertRejects(
-    () => convertWebP('https://example.com/image.svg'),
-    Error,
-  )
+  await assertRejects(() => convertWebP('https://example.com/image.svg'), Error)
 })
 
 Deno.test('webp service - convertWebP extracts path correctly', () => {

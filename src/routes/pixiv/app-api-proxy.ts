@@ -12,8 +12,8 @@ export const pixivApiProxyRoute = new Hono().on(
     request: { param: z.object() },
     responses: { 200: z.object() },
   }),
-  async (c) => {
+  async c => {
     const resp = await pixivApiProxy(c.req.url, c.req.raw)
     return c.body(resp.body!, resp)
-  },
+  }
 )

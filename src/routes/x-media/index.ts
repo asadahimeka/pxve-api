@@ -31,7 +31,7 @@ export const xMediaRoute = new Hono().get(
       200: z.object(),
     },
   }),
-  async (c) => {
+  async c => {
     const { userName, userId, nextCursor } = c.req.valid('query')
 
     // Validate userName: alphanumeric + underscore, 1-15 chars
@@ -45,5 +45,5 @@ export const xMediaRoute = new Hono().get(
 
     const res = await runFetchXMediaCmd(userName, userId, nextCursor)
     return c.json(res, 200, { 'Cache-Control': 'public, max-age=86400' })
-  },
+  }
 )

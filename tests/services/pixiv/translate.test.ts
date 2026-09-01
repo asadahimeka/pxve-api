@@ -42,9 +42,9 @@ Deno.test('pixiv translate service - text splitting works correctly', () => {
         })
         return acc
       },
-      [{ v: '', i: 0 }],
+      [{ v: '', i: 0 }]
     )
-    .map((e) => e.v)
+    .map(e => e.v)
     .slice(1)
 
   assertEquals(splitTextArr.length >= 1, true)

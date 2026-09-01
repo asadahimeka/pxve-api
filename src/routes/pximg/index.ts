@@ -19,12 +19,12 @@ pximgRoute.get(
       },
     },
   }),
-  async (c) => {
+  async c => {
     const path = c.req.path.replace('/pximg', '')
     if (!path || path === '/') return c.notFound()
     const res = await fetchPximg(path)
     return res
-  },
+  }
 )
 
 pximgRoute.get(
@@ -58,8 +58,8 @@ pximgRoute.get(
       301: z.object(),
     },
   }),
-  async (c) => {
+  async c => {
     const res = await fetchPximgByPidPath(c.req.path)
     return res
-  },
+  }
 )

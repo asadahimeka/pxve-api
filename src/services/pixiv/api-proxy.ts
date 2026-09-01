@@ -16,7 +16,7 @@ export async function pixivApiProxy(reqUrl: string, req: Request) {
 
   const headers: Record<string, string> = { ...PIXIV_API_HEADERS }
   const headerKeys = ['Authorization', 'Content-Type', 'X-Client-Time', 'X-Client-Hash']
-  headerKeys.forEach((key) => {
+  headerKeys.forEach(key => {
     const val = req.headers.get(key)
     if (val) headers[key] = val
   })

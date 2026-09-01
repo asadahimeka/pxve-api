@@ -16,7 +16,7 @@ export function isSafeZipEntry(name: string): boolean {
 
 export type UgoiraConvertExt = 'mp4' | 'gif' | 'apng' | 'webp' | 'webm' | 'avif'
 
-self.onmessage = async (event) => {
+self.onmessage = async event => {
   let { zip, rate, id, ext = 'avif' } = event.data
 
   try {
@@ -130,7 +130,10 @@ async function validateZipEntries(zipPath: string) {
   }
 
   const decoder = new TextDecoder()
-  const entries = decoder.decode(stdout).split('\n').filter((e) => e.trim())
+  const entries = decoder
+    .decode(stdout)
+    .split('\n')
+    .filter(e => e.trim())
   for (const entry of entries) {
     checkEntry(entry)
   }
@@ -150,15 +153,13 @@ async function convertImages(imagesDir: string, outputFilePath: string, rate: st
     mp4: `-y -r ${rate} -i ${imagesDir}/%06d.jpg -c:v libx264 -pix_fmt yuv420p -vf pad=ceil(iw/2)*2:ceil(ih/2)*2`
       .split(/\s+/)
       .concat([outputFilePath]),
-    gif:
-      `-y -r ${rate} -i ${imagesDir}/%06d.jpg -filter_complex [0:v]scale=480:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=dither=none`
-        .split(/\s+/)
-        .concat([outputFilePath]),
+    gif: `-y -r ${rate} -i ${imagesDir}/%06d.jpg -filter_complex [0:v]scale=480:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=dither=none`
+      .split(/\s+/)
+      .concat([outputFilePath]),
     apng: `-y -r ${rate} -i ${imagesDir}/%06d.jpg -c:v apng -plays 0 -vsync 0`.split(/\s+/).concat([outputFilePath]),
-    webp:
-      `-y -r ${rate} -i ${imagesDir}/%06d.jpg -vf scale=600:-1:force_original_aspect_ratio=decrease,fps=${rate} -loop 0 -compression_level 6 -quality 80 -preset picture`
-        .split(/\s+/)
-        .concat([outputFilePath]),
+    webp: `-y -r ${rate} -i ${imagesDir}/%06d.jpg -vf scale=600:-1:force_original_aspect_ratio=decrease,fps=${rate} -loop 0 -compression_level 6 -quality 80 -preset picture`
+      .split(/\s+/)
+      .concat([outputFilePath]),
     webm: `-y -r ${rate} -i ${imagesDir}/%06d.jpg -c:v libvpx-vp9 -crf 28 -b:v 0 -pix_fmt yuv420p -vsync 0`
       .split(/\s+/)
       .concat([outputFilePath]),

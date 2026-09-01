@@ -24,7 +24,7 @@ export const aiImageDetectRoute = new Hono().get(
       }),
     },
   }),
-  async (c) => {
+  async c => {
     const { url } = c.req.valid('query')
 
     try {
@@ -38,5 +38,5 @@ export const aiImageDetectRoute = new Hono().get(
       }
       return c.json({ error: 'Image analysis error' }, 502)
     }
-  },
+  }
 )

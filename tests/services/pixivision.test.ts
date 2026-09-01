@@ -29,14 +29,16 @@ Deno.test('pixivision service - fetchPixivisionList parses articles correctly', 
   const $ = load(mockPixivisionHtml)
   const $articles = $('.main-column-container ._article-card')
 
-  const articles = $articles.map(function () {
-    const $this = $(this)
-    const $link = $this.find('.arc__title a')
-    return {
-      id: $link.data('gtm-label'),
-      title: $link.text(),
-    }
-  }).toArray()
+  const articles = $articles
+    .map(function () {
+      const $this = $(this)
+      const $link = $this.find('.arc__title a')
+      return {
+        id: $link.data('gtm-label'),
+        title: $link.text(),
+      }
+    })
+    .toArray()
 
   assertEquals(articles.length, 1)
   assertEquals(articles[0].id, 123)
@@ -47,14 +49,16 @@ Deno.test('pixivision service - fetchPixivisionList parses ranking items', () =>
   const $ = load(mockPixivisionHtml)
   const $rankList = $('.alc__articles-list-group--ranking ._article-summary-card')
 
-  const rank = $rankList.map(function () {
-    const $this = $(this)
-    const $link = $this.find('.asc__title-link')
-    return {
-      id: $link.data('gtm-label'),
-      title: $link.text(),
-    }
-  }).toArray()
+  const rank = $rankList
+    .map(function () {
+      const $this = $(this)
+      const $link = $this.find('.asc__title-link')
+      return {
+        id: $link.data('gtm-label'),
+        title: $link.text(),
+      }
+    })
+    .toArray()
 
   assertEquals(rank.length, 1)
   assertEquals(rank[0].id, 'rank1')

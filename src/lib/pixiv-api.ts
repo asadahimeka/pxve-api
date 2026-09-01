@@ -216,8 +216,8 @@ class PixivApi {
           search_target: 'partial_match_for_tags',
           sort: 'date_desc',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/search/illust?${queryString}`)
   }
@@ -233,8 +233,8 @@ class PixivApi {
           word,
           search_target: 'partial_match_for_tags',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/search/popular-preview/illust?${queryString}`)
   }
@@ -251,8 +251,8 @@ class PixivApi {
           search_target: 'partial_match_for_tags',
           sort: 'date_desc',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/search/novel?${queryString}`)
   }
@@ -268,8 +268,8 @@ class PixivApi {
           word,
           search_target: 'partial_match_for_tags',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/search/popular-preview/novel?${queryString}`)
   }
@@ -284,8 +284,8 @@ class PixivApi {
           word,
           search_target: 'partial_match_for_tags',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/search/bookmark-ranges/illust?${queryString}`)
   }
@@ -300,8 +300,8 @@ class PixivApi {
           word,
           search_target: 'partial_match_for_tags',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/search/bookmark-ranges/novel?${queryString}`)
   }
@@ -315,8 +315,8 @@ class PixivApi {
         {
           word,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/search/user?${queryString}`)
   }
@@ -328,7 +328,7 @@ class PixivApi {
     const queryString = qs.stringify(
       Object.assign({
         word,
-      }),
+      })
     )
     return this.requestUrl(`/v1/search/autocomplete?${queryString}`)
   }
@@ -340,7 +340,7 @@ class PixivApi {
     const queryString = qs.stringify(
       Object.assign({
         word,
-      }),
+      })
     )
     return this.requestUrl(`/v2/search/autocomplete?${queryString}`)
   }
@@ -355,8 +355,8 @@ class PixivApi {
         {
           user_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/detail?${queryString}`)
   }
@@ -371,8 +371,8 @@ class PixivApi {
         {
           user_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/illusts?${queryString}`)
   }
@@ -387,8 +387,8 @@ class PixivApi {
         {
           user_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/novels?${queryString}`)
   }
@@ -404,8 +404,8 @@ class PixivApi {
           user_id: id,
           restrict: 'public',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/bookmarks/illust?${queryString}`)
   }
@@ -416,8 +416,8 @@ class PixivApi {
         {
           restrict: 'public',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/bookmark-tags/illust?${queryString}`)
   }
@@ -432,8 +432,8 @@ class PixivApi {
         {
           illust_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v2/illust/bookmark/detail?${queryString}`)
   }
@@ -449,8 +449,8 @@ class PixivApi {
           user_id: id,
           restrict: 'public',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/bookmarks/novel?${queryString}`)
   }
@@ -461,8 +461,8 @@ class PixivApi {
         {
           restrict: 'public',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/bookmark-tags/novel?${queryString}`)
   }
@@ -482,8 +482,8 @@ class PixivApi {
           illust_id: id,
           include_total_comments: true,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/illust/comments?${queryString}`)
   }
@@ -498,8 +498,8 @@ class PixivApi {
         {
           illust_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v3/illust/comments?${queryString}`)
   }
@@ -514,8 +514,8 @@ class PixivApi {
         {
           illust_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v2/illust/comments?${queryString}`)
   }
@@ -535,14 +535,15 @@ class PixivApi {
 
     const { nextUrl } = options
     delete options.nextUrl
-    const queryString = nextUrl ||
+    const queryString =
+      nextUrl ||
       qs.stringify(
         Object.assign(
           {
             illust_id: id,
           },
-          options,
-        ),
+          options
+        )
       )
     return this.requestUrl(`/v2/illust/related?${queryString}`)
   }
@@ -557,8 +558,8 @@ class PixivApi {
         {
           novel_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/novel/related?${queryString}`)
   }
@@ -573,8 +574,8 @@ class PixivApi {
         {
           seed_user_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/related?${queryString}`)
   }
@@ -589,8 +590,8 @@ class PixivApi {
         {
           illust_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/illust/detail?${queryString}`)
   }
@@ -601,8 +602,8 @@ class PixivApi {
         {
           content_type: 'illust',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/illust/new?${queryString}`)
   }
@@ -613,8 +614,8 @@ class PixivApi {
         {
           restrict: 'all',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v2/illust/follow?${queryString}`)
   }
@@ -625,8 +626,8 @@ class PixivApi {
         {
           include_ranking_illusts: true,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/illust/recommended?${queryString}`)
   }
@@ -637,8 +638,8 @@ class PixivApi {
         {
           mode: 'day',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/illust/ranking?${queryString}`)
   }
@@ -833,8 +834,8 @@ class PixivApi {
           include_privacy_policy: false,
           include_ranking_illusts: false,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/manga/recommended?${queryString}`)
   }
@@ -845,8 +846,8 @@ class PixivApi {
         {
           content_type: 'manga',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/illust/new?${queryString}`)
   }
@@ -858,8 +859,8 @@ class PixivApi {
           include_ranking_novels: false,
           include_privacy_policy: false,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/novel/recommended?${queryString}`)
   }
@@ -880,8 +881,8 @@ class PixivApi {
           novel_id: id,
           include_total_comments: true,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/novel/comments?${queryString}`)
   }
@@ -896,8 +897,8 @@ class PixivApi {
         {
           novel_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v2/novel/comments?${queryString}`)
   }
@@ -912,8 +913,8 @@ class PixivApi {
         {
           novel_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v3/novel/comments?${queryString}`)
   }
@@ -1005,8 +1006,8 @@ class PixivApi {
         {
           restrict: 'all',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/novel/follow?${queryString}`)
   }
@@ -1021,8 +1022,8 @@ class PixivApi {
         {
           mode: 'day',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/novel/ranking?${queryString}`)
   }
@@ -1037,8 +1038,8 @@ class PixivApi {
         {
           novel_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v2/novel/bookmark/detail?${queryString}`)
   }
@@ -1058,8 +1059,8 @@ class PixivApi {
           user_id: id,
           restrict: 'public',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/following?${queryString}`)
   }
@@ -1081,8 +1082,8 @@ class PixivApi {
         {
           user_id: id,
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/user/follower?${queryString}`)
   }
@@ -1109,8 +1110,8 @@ class PixivApi {
         {
           list_type: 'popular',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/live/list?${queryString}`)
   }
@@ -1122,8 +1123,8 @@ class PixivApi {
           filter: 'for_android',
           category: 'all',
         },
-        options,
-      ),
+        options
+      )
     )
     return this.requestUrl(`/v1/spotlight/articles?${queryString}`)
   }

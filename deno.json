@@ -54,13 +54,8 @@
   },
   "lint": {
     "rules": {
-      "tags": [
-        "recommended"
-      ],
-      "exclude": [
-        "no-unused-vars",
-        "no-explicit-any"
-      ]
+      "tags": ["recommended"],
+      "exclude": ["no-unused-vars", "no-explicit-any"]
     }
   }
 }

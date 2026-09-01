@@ -8,12 +8,6 @@
       "@services/*": ["./src/services/*"]
     }
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "public"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "public"]
 }
