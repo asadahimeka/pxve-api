@@ -20,9 +20,15 @@ import { routes } from './routes/index.ts'
 const app = new Hono()
 
 app.use(logger())
+app.use(
+  cors({
+    origin: o => (isAllowedOrigin(o) ? o : undefined),
+    maxAge: 3600,
+    credentials: true,
+  })
+)
 app.use(rateLimit())
 app.use(optionalAuth())
-app.use(cors({ origin: origin => (isAllowedOrigin(origin) ? origin : undefined), credentials: true }))
 app.use(secureHeaders({ crossOriginResourcePolicy: 'same-site' }))
 app.use(blocker())
 app.get('*', etag())
@@ -90,14 +96,13 @@ app.onError((err, c) => c.json(toPublicError(err), 500))
 const deduper = new RequestDeduper()
 const port = Number(Deno.env.get('PORT') ?? 3021)
 Deno.serve({ hostname: '0.0.0.0', port }, (req, ...args) => {
-  const hasAuth = Boolean(
-    req.headers.get('authorization') || req.headers.get('x-auth') || req.headers.get('cookie')?.includes('PHPSESSID')
+  const skipDeduper = Boolean(
+    req.method.toUpperCase() != 'GET' ||
+    req.headers.get('authorization') ||
+    req.headers.get('x-auth') ||
+    req.headers.get('cookie')?.includes('PHPSESSID')
   )
-  if (hasAuth) {
-    return app.fetch(req, ...args)
-  }
-  const key = req.method.toUpperCase() == 'GET' ? req.url : crypto.randomUUID()
-  return deduper.run(key, async () => await app.fetch(req, ...args))
+  return skipDeduper ? app.fetch(req, ...args) : deduper.run(req.url, async () => await app.fetch(req, ...args))
 })
 
 export { app }

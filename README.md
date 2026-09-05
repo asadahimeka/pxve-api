@@ -30,7 +30,7 @@ API 文档：[api.pxve.cc/docs](https://api.pxve.cc/docs)
 
 ### 环境要求
 
-Deno 2.x
+Deno 2.x / zip / unzip / ffmpeg
 
 ### 安装运行
 
@@ -113,11 +113,11 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 | `PROXY_BLOCK_PRIVATE`  | 禁止访问私网地址（1/0）                                    | `1`             |
 | `MAX_DOWNLOAD_BYTES`   | 下载文件大小上限（字节）                                   | 52428800 (50MB) |
 | `UGOIRA_MAX_ZIP_BYTES` | Ugoira ZIP 文件大小上限（字节）                            | 52428800 (50MB) |
-| `API_TOKEN`            | API 访问令牌，设置后仅该 Token 可访问 `/docs` 等文档路径   | 无              |
+| `API_TOKEN`            | API 访问令牌，设置后调用需传 `Authorization: Bearer <Token>` 头  | 无        |
 
 ### CORS 说明
 
-- CORS 域名匹配使用**精确匹配**，若需允许子域（如 `*.pxve.cc`），请配置为 `*.pxve.cc`
+- CORS 域名匹配（`ACCEPT_DOMAINS`）使用**精确匹配**，若需允许子域（如 `*.pxve.cc`），请配置为 `*.pxve.cc`
 - 非浏览器客户端（如 curl）不发送 `Origin`/`Referer` 头，可能收到 403 响应——这是预期行为
 
 ## 📚 API 文档
@@ -132,7 +132,7 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 
 ### Pixiv 相关
 
-- `GET /api/pixiv/*` - Pixiv APP API
+- `GET /api/pixiv/*` - Pixiv APP API（兼容 HibiAPI）
 - `GET /api/pixivision` - Pixivision API
 - `GET /api/pixiv-now/http` - Pixiv Web API
 - `GET /api/pixiv-novel-translate` - 小说翻译

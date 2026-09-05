@@ -23,7 +23,7 @@ export class RequestDeduper {
         const res = await fn()
         return res
       } catch (err: any) {
-        console.error(new Date().toLocaleString('zh'), sanitizeUrl(key), 'ERROR:', sanitizeError(err))
+        console.error('[ERROR]:', new Date().toLocaleString('zh'), sanitizeUrl(key), sanitizeError(err))
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
           status: 500,
           headers: { 'content-type': 'application/json' },

@@ -60,7 +60,7 @@ wallpaperRoute.get(
       query: WallpaperQuerySchema,
     },
     responses: {
-      200: z.any(),
+      200: z.object(),
       400: z.object({ error: z.string() }),
       502: z.object({ error: z.string() }),
     },
