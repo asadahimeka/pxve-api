@@ -110,8 +110,8 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 
 | 优先级 | 变量 | 说明 |
 | ------ | ---- | ---- |
-| 1 | `X_MEDIA_COOKIES` | 整包 JSON（内容与 `cookies.json` 相同），如 `{"auth_token":"...","ct0":"..."}` |
-| 2 | `X_MEDIA_COOKIES_FILE` | 自定义文件路径（如 docker secrets 挂载的 `/run/secrets/x_media_cookies`） |
+| 1 | `X_MEDIA_COOKIES` | 整包 JSON（内容与 `cookies.json` 相同） |
+| 2 | `X_MEDIA_COOKIES_FILE` | 自定义文件路径 |
 | 3 | （默认） | `src/services/x-media/cookies.json` |
 
 ```bash
@@ -128,7 +128,7 @@ X_MEDIA_COOKIES='{"auth_token":"xxxx","ct0":"yyyy"}'
 | `PROXY_BLOCK_PRIVATE`  | 禁止访问私网地址（1/0）                                    | `1`             |
 | `MAX_DOWNLOAD_BYTES`   | 下载文件大小上限（字节）                                   | 52428800 (50MB) |
 | `UGOIRA_MAX_ZIP_BYTES` | Ugoira ZIP 文件大小上限（字节）                            | 52428800 (50MB) |
-| `API_TOKEN`            | API 访问令牌，设置后调用需传 `Authorization: Bearer <Token>` 头  | 无        |
+| `API_TOKEN`            | API 访问令牌，设置后需传 `Authorization: Bearer <Token>` 头  | 无            |
 
 ### CORS 说明
 
