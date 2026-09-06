@@ -30,7 +30,7 @@ API Documentation: [api.pxve.cc/docs](https://api.pxve.cc/docs)
 
 ### Requirements
 
-Deno 2.x
+Deno 2.x / zip / unzip / ffmpeg
 
 ### Installation & Running
 
@@ -131,7 +131,7 @@ After starting the service, the API documentation can be accessed at:
 
 - `GET /api/sauce/` - Image search
 - `GET /api/ai-image-detect` - AI image detection
-- `GET /api/x/media` - Fetch X user media tweets, see [reference documentation](./src/services/x-media/README.md)
+- `GET /api/x/media` - Fetch X user media tweets
 
 ### Other Endpoints
 
@@ -149,9 +149,6 @@ deno task start
 
 # Type checking
 deno task type-check
-
-# Code formatting
-deno task fmt
 
 # Linting
 deno task lint

@@ -149,7 +149,7 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 
 - `GET /api/sauce/` - 以图搜图
 - `GET /api/ai-image-detect` - AI 图像检测
-- `GET /api/x/media` - 获取 X 用户媒体推文，详见[参考文档](./src/services/x-media/README.md)
+- `GET /api/x/media` - 获取 X 用户媒体推文
 
 ### 其他接口
 
@@ -167,9 +167,6 @@ deno task start
 
 # 类型检查
 deno task type-check
-
-# 代码格式化
-deno task fmt
 
 # 代码检查
 deno task lint

@@ -4,7 +4,6 @@
     "start": "deno run --env --allow-all ./src/app.ts",
     "type-check": "deno check ./src/**/*.ts",
     "manage-cache": "deno run -A scripts/cache-manage.ts",
-    "fmt": "deno fmt",
     "lint": "deno lint",
     "test": "deno test --env --allow-all tests/"
   },
@@ -51,7 +50,8 @@
     "indentWidth": 2,
     "semiColons": false,
     "singleQuote": true,
-    "proseWrap": "preserve"
+    "proseWrap": "preserve",
+    "arrowParens": "preferNone"
   },
   "lint": {
     "rules": {

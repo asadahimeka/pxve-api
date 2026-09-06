@@ -11,14 +11,11 @@
 
 ## 🛠️ 环境要求
 
-### Python 环境
-
-- **Python 版本**: 3.8+
-- **必需依赖**: `twikit`
-
-### Deno 环境
+### 运行环境
 
 - **Deno 版本**: 2.x（与主项目保持一致）
+- 无需 Python 环境（服务已于 2026-09 改为原生 Deno 实现，详见 `api.ts` / `transaction.ts`）
+- 原 `X_MEDIA_MAX_CONCURRENCY` 并发闸门已随 Python 子进程移除（纯 Deno 实现无进程开销，不再需要）
 
 ## 📦 安装配置
 
@@ -77,6 +74,8 @@ const result = await runFetchXMediaCmd('elonmusk', null, 'cursor_string')
 ```
 
 ### 直接使用 Python 脚本
+
+> Legacy：`fetch_x_media.py` 仅保留用于与原生实现做 A/B 对照，不再被服务调用。注意 pip 版 twikit 已过时，直接运行可能报错；对照运行时用 `PYTHONPATH=<repo>/reference/twikit` 指向仓库内最新 fork。
 
 ```bash
 # 通过用户名获取

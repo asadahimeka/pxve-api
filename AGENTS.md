@@ -20,9 +20,6 @@ deno task start
 # Type checking
 deno task type-check
 
-# Code formatting
-deno task fmt
-
 # Linting
 deno task lint
 
@@ -356,4 +353,4 @@ if (Deno.args.includes('--debug')) {
 - **Port**: Default 3021, configurable via `PORT` environment variable
 - **Docker**: Use provided Dockerfile for containerization
 
-When making changes, always run `deno task fmt` and `deno task lint` before committing. For comprehensive checks, use `deno task type-check` to ensure type safety.
+When making changes, always run `deno task lint` before committing. For comprehensive checks, use `deno task type-check` to ensure type safety.

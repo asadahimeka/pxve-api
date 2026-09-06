@@ -1,30 +1,9 @@
+// src/services/x-media/index.ts — native Deno implementation (no Python subprocess).
+// Legacy Python fallback kept at ./fetch_x_media.py for A/B comparison only.
 import { join } from '@std/path'
+import { XClient } from './api.ts'
 
-const fetch_x_media_py = join(import.meta.dirname!, 'fetch_x_media.py')
-
-/** Max concurrent x-media Python processes */
-const X_MEDIA_MAX_CONCURRENCY = Number(Deno.env.get('X_MEDIA_MAX_CONCURRENCY') ?? 2)
-let activeXMedia = 0
-const waitQueue: (() => void)[] = []
-
-async function acquireSlot(): Promise<void> {
-  if (activeXMedia < X_MEDIA_MAX_CONCURRENCY) {
-    activeXMedia++
-    return
-  }
-  return new Promise<void>(resolve => {
-    waitQueue.push(resolve)
-  })
-}
-
-function releaseSlot(): void {
-  activeXMedia--
-  if (waitQueue.length > 0) {
-    activeXMedia++
-    waitQueue.shift()!()
-  }
-}
-
+const DEFAULT_LIMIT = 40
 const userNameRe = /^[A-Za-z0-9_]{1,15}$/
 const cursorRe = /^[A-Za-z0-9_\-=+/]{1,64}$/
 
@@ -42,28 +21,9 @@ export async function runFetchXMediaCmd(userName?: string, userId?: string, next
     throw new Error('`nextCursor` must be 1-64 alphanumeric/underscore/hyphen/base64 characters.')
   }
 
-  await acquireSlot()
-  try {
-    const args = [
-      userName && ['--user', userName],
-      userId && ['--userid', userId],
-      nextCursor && ['--cursor', nextCursor],
-    ]
-      .flat()
-      .filter(Boolean) as string[]
-
-    const command = new Deno.Command('python', { args: [fetch_x_media_py, ...args] })
-
-    const { success, stderr, stdout } = await command.output()
-    const decoder = new TextDecoder()
-    if (!success) {
-      console.error('Run fetch_x_media cmd failed:', decoder.decode(stderr))
-      throw new Error('Run fetch_x_media cmd failed')
-    }
-
-    const res = decoder.decode(stdout)
-    return JSON.parse(res)
-  } finally {
-    releaseSlot()
-  }
+  // cookies.json is re-read per request: editing the file takes effect without restart.
+  const client = await XClient.fromCookiesFile(join(import.meta.dirname!, 'cookies.json'))
+  const id = userId ?? (await client.getUserIdByScreenName(userName!))
+  const { tweets, nextCursor: nc } = await client.getUserMediaTimeline(id, DEFAULT_LIMIT, nextCursor ?? null)
+  return { results: tweets, next_cursor: nc, user_id: id }
 }

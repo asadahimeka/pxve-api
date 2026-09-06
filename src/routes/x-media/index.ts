@@ -7,7 +7,7 @@ export const xMediaRoute = new Hono().get(
   '/x/media',
   openApi({
     description: `获取 X(Twitter) 用户的媒体推文<br>
-需要 python 环境以及 \`pip install twikit\`<br>
+原生 Deno 实现，无需 Python 环境<br>
 示例：\`/api/x/media?userName=k_rity\`<br>
 第一次请求可只传入 \`userName\`, 从返回结果里获取 \`user_id\` 和 \`next_cursor\` 以供后续请求
 `,
@@ -31,7 +31,7 @@ export const xMediaRoute = new Hono().get(
       200: z.object(),
     },
   }),
-  async c => {
+  async (c) => {
     const { userName, userId, nextCursor } = c.req.valid('query')
 
     // Validate userName: alphanumeric + underscore, 1-15 chars
@@ -45,5 +45,5 @@ export const xMediaRoute = new Hono().get(
 
     const res = await runFetchXMediaCmd(userName, userId, nextCursor)
     return c.json(res, 200, { 'Cache-Control': 'public, max-age=86400' })
-  }
+  },
 )
