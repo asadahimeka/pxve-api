@@ -50,8 +50,7 @@
     "indentWidth": 2,
     "semiColons": false,
     "singleQuote": true,
-    "proseWrap": "preserve",
-    "arrowParens": "preferNone"
+    "proseWrap": "preserve"
   },
   "lint": {
     "rules": {

@@ -56,6 +56,23 @@ pip install twikit
 
 > ⚠️ **重要**: Cookie 包含敏感信息，请勿提交到版本控制系统
 
+### 3. Cookie 来源（环境变量，PaaS 友好）
+
+文件系统不方便的平台（Railway / Render / Koyeb 等）可用环境变量提供 Cookie，优先级从高到低：
+
+| 优先级 | 变量 | 说明 |
+| ------ | ---- | ---- |
+| 1 | `X_MEDIA_COOKIES` | 整包 JSON（内容与 `cookies.json` 相同），如 `{"auth_token":"...","ct0":"..."}` |
+| 2 | `X_MEDIA_COOKIES_FILE` | 自定义文件路径（如 docker secrets 挂载的 `/run/secrets/x_media_cookies`） |
+| 3 | （默认） | `src/services/x-media/cookies.json`（每请求重读，改文件即时生效） |
+
+```bash
+# PaaS 环境变量示例（单引号包裹避免 shell 解析）
+X_MEDIA_COOKIES='{"auth_token":"xxxx","ct0":"yyyy"}'
+```
+
+注意：环境变量方式修改后需**重启进程**才生效（进程启动时固化）；需要热更新就用文件方式（优先级 2/3）。
+
 ## 🐳 Docker 部署
 
 `.dockerignore` 已将 `cookies.json` 排除在镜像之外（镜像中不存在 cookie，也不会进入镜像层），部署时通过 bind-mount 注入到容器内代码读取的固定路径：
@@ -67,14 +84,21 @@ docker run -d \
   pxve-api
 ```
 
-或 compose：
+或 compose（secrets 方式，配合 `X_MEDIA_COOKIES_FILE` 自定义路径）：
 
 ```yaml
 services:
   app:
-    volumes:
-      - ./cookies.json:/app/src/services/x-media/cookies.json:ro
+    environment:
+      X_MEDIA_COOKIES_FILE: /run/secrets/x_media_cookies
+    secrets:
+      - x_media_cookies
+secrets:
+  x_media_cookies:
+    file: ./cookies.json
 ```
+
+PaaS 等无文件平台直接用 `X_MEDIA_COOKIES` 环境变量即可（见上文「Cookie 来源」）。
 
 注意事项：
 

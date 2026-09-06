@@ -68,13 +68,6 @@ docker build -t pxve-api .
 
 # 运行容器
 docker run -d -p 3021:3021 --env-file .env pxve-api
-
-# 如果需要 X 媒体获取功能则需要注入 cookies.json 并且此文件需要 644 权限
-docker run -d \
-  -v /path/to/cookies.json:/app/src/services/x-media/cookies.json:ro \
-  -p 3021:3021 \
-  --env-file .env \
-  pxve-api
 ```
 
 ## 📝 配置说明
@@ -110,6 +103,21 @@ docker run -d \
 | `HIBIAPI_BASE`         | 备用 HibiAPI 服务域名 | API 转发 |
 | `SAUCENAO_API_KEY`     | SauceNAO API Key      | 以图搜图 |
 | `SILICONClOUD_APT_KEY` | 硅基流动 API Key      | 小说翻译 |
+
+### X Cookie 来源
+
+可用环境变量提供 X Cookie，优先级从高到低：
+
+| 优先级 | 变量 | 说明 |
+| ------ | ---- | ---- |
+| 1 | `X_MEDIA_COOKIES` | 整包 JSON（内容与 `cookies.json` 相同），如 `{"auth_token":"...","ct0":"..."}` |
+| 2 | `X_MEDIA_COOKIES_FILE` | 自定义文件路径（如 docker secrets 挂载的 `/run/secrets/x_media_cookies`） |
+| 3 | （默认） | `src/services/x-media/cookies.json` |
+
+```bash
+# 环境变量示例（单引号包裹避免 shell 解析）
+X_MEDIA_COOKIES='{"auth_token":"xxxx","ct0":"yyyy"}'
+```
 
 ### 代理安全配置
 
