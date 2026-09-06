@@ -68,6 +68,13 @@ docker build -t pxve-api .
 
 # 运行容器
 docker run -d -p 3021:3021 --env-file .env pxve-api
+
+# 如果需要 X 媒体获取功能则需要注入 cookies.json 并且此文件需要 644 权限
+docker run -d \
+  -v /path/to/cookies.json:/app/src/services/x-media/cookies.json:ro \
+  -p 3021:3021 \
+  --env-file .env \
+  pxve-api
 ```
 
 ## 📝 配置说明

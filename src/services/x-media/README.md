@@ -56,6 +56,32 @@ pip install twikit
 
 > ⚠️ **重要**: Cookie 包含敏感信息，请勿提交到版本控制系统
 
+## 🐳 Docker 部署
+
+`.dockerignore` 已将 `cookies.json` 排除在镜像之外（镜像中不存在 cookie，也不会进入镜像层），部署时通过 bind-mount 注入到容器内代码读取的固定路径：
+
+```bash
+docker run -d \
+  -v /srv/pxve/cookies.json:/app/src/services/x-media/cookies.json:ro \
+  -p 3021:3021 \
+  pxve-api
+```
+
+或 compose：
+
+```yaml
+services:
+  app:
+    volumes:
+      - ./cookies.json:/app/src/services/x-media/cookies.json:ro
+```
+
+注意事项：
+
+1. **热更新有效**：实现为每次请求重读该文件，宿主机上修改后立即生效，无需重启容器或重建镜像。
+2. **单文件挂载的 inode 陷阱**：若在宿主机上用 `mv` / "另存为新文件" 的方式替换，容器仍指向旧 inode。更新时请**原地写入**（`cat new_cookies.json > cookies.json`），或更新后 `docker restart`（无需重建镜像）。
+3. **权限**：镜像以 `deno` 用户（非 root）运行，宿主机文件保证该用户可读即可（如 `chmod 644`；`:ro` 挂载无需写权限）。
+
 ## 🚀 使用方法
 
 ### TypeScript 调用

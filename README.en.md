@@ -199,7 +199,7 @@ Issues and Pull Requests are welcome!
 1. Please comply with Pixiv's terms of service and relevant laws and regulations
 2. Use the API responsibly and avoid excessive requests
 3. Some features require corresponding API Keys or Tokens
-4. It is recommended to enable caching in production environments to improve performance
+4. It is recommended to enable caching(Nginx/Cloudflare) in production environments to improve performance
 
 ## 📄 License
 
