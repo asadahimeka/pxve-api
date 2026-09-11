@@ -10,6 +10,9 @@
     "npm:@__dirname/pixiv-web-api@0.1.4": "0.1.4",
     "npm:@hono/swagger-ui@~0.5.3": "0.5.3_hono@4.13.5",
     "npm:@scalar/hono-api-reference@~0.9.34": "0.9.48_hono@4.13.5",
+    "npm:@types/crypto-js@*": "4.2.2",
+    "npm:@types/qrcode@*": "1.5.6",
+    "npm:@types/qs@*": "6.15.1",
     "npm:await-lock@2.2.2": "2.2.2",
     "npm:bing-translate-api@^4.2.1": "4.2.1",
     "npm:cheerio@1.1.2": "1.1.2",
@@ -323,6 +326,10 @@
       ],
       "tarball": "https://registry.npmmirror.com/@types/cacheable-request/-/cacheable-request-6.0.3.tgz"
     },
+    "@types/crypto-js@4.2.2": {
+      "integrity": "sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==",
+      "tarball": "https://registry.npmmirror.com/@types/crypto-js/-/crypto-js-4.2.2.tgz"
+    },
     "@types/http-cache-semantics@4.2.0": {
       "integrity": "sha512-L3LgimLHXtGkWikKnsPg0/VFx9OGZaC+eN1u4r+OB1XRqH3meBIAVC2zr1WdMH+RHmnRkqliQAOHNJ/E0j/e0Q==",
       "tarball": "https://registry.npmmirror.com/@types/http-cache-semantics/-/http-cache-semantics-4.2.0.tgz"
@@ -340,6 +347,17 @@
         "undici-types"
       ],
       "tarball": "https://registry.npmmirror.com/@types/node/-/node-26.4.0.tgz"
+    },
+    "@types/qrcode@1.5.6": {
+      "integrity": "sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw==",
+      "dependencies": [
+        "@types/node"
+      ],
+      "tarball": "https://registry.npmmirror.com/@types/qrcode/-/qrcode-1.5.6.tgz"
+    },
+    "@types/qs@6.15.1": {
+      "integrity": "sha512-GZHUBZR9hckSUhrxmp1nG6NwdpM9fCunJwyThLW1X3AyHgd9IlHb6VANpQQqDr2o/qQp6McZ3y/IA2rVzKzSbw==",
+      "tarball": "https://registry.npmmirror.com/@types/qs/-/qs-6.15.1.tgz"
     },
     "@types/responselike@1.0.3": {
       "integrity": "sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==",

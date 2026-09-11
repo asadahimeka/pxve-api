@@ -39,8 +39,7 @@ export const qrcodeRoute = new Hono()
           description: '二维码图片',
           content: {
             'image/png': {},
-            'application/json': {},
-            'text/javascript': {},
+            'text/plain': {},
           },
         },
         400: z.object({ error: z.string() }),

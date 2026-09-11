@@ -207,7 +207,7 @@ route.get(
 - `PROXY_BLOCK_PRIVATE` — block private/reserved IPs (default: 1)
 - `MAX_DOWNLOAD_BYTES` — download size limit in bytes (default: 52428800 / 50MB)
 - `UGOIRA_MAX_ZIP_BYTES` — ugoira ZIP size limit in bytes (default: 52428800 / 50MB)
-- `API_TOKEN` — API access token; when set, only this token can access `/docs` paths
+- `API_TOKEN` — API access token; when set, all paths except the `/docs` / `/swagger` whitelist require it, sent as `Authorization: Bearer <API_TOKEN>` or via the dedicated `X-Api-Token` header. The latter exists so routes that forward `Authorization` upstream (e.g. the `/pixiv-app-api/*`, `/pixiv-oauth/*` proxy carrying the user's Pixiv access token) can still authenticate against the gateway without colliding on the same header; `X-Api-Token` is consumed by the gateway and never forwarded upstream
 
 #### Usage Pattern
 

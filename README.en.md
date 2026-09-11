@@ -30,7 +30,7 @@ API Documentation: [api.pxve.cc/docs](https://api.pxve.cc/docs)
 
 ### Requirements
 
-Deno 2.x / zip / unzip / ffmpeg
+Deno 2.x / unzip / ffmpeg
 
 ### Installation & Running
 

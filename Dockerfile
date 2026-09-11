@@ -10,7 +10,7 @@ WORKDIR /app
 RUN chown -R deno:deno /app
 
 # Install system dependencies
-RUN apk add --no-cache zip unzip ffmpeg
+RUN apk add --no-cache unzip ffmpeg
 
 # Prefer not to run as root.
 USER deno

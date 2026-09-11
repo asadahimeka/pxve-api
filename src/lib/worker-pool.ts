@@ -1,6 +1,7 @@
 const configuredQueueMax = Number(Deno.env.get('WORKER_QUEUE_MAX'))
 const WORKER_QUEUE_MAX =
   Number.isFinite(configuredQueueMax) && configuredQueueMax > 0 ? Math.floor(configuredQueueMax) : 200
+const WORKER_TIMEOUT = 60_000
 
 interface Task {
   data: any
@@ -43,6 +44,7 @@ export class WorkerPool {
     }
 
     let settled = false
+    // deno-lint-ignore prefer-const
     let timeoutId: ReturnType<typeof setTimeout> | undefined
 
     const finish = (fn: () => void) => {
@@ -81,7 +83,7 @@ export class WorkerPool {
       finish(() => {
         task.reject(new Error('Worker task timeout'))
       })
-    }, 30_000)
+    }, WORKER_TIMEOUT)
   }
 
   addTask(data: any) {
