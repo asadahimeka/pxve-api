@@ -63,6 +63,47 @@ Deno.test('proxy blocks file:// protocol', async () => {
   assertEquals(r.status, 400)
 })
 
+Deno.test('proxy blocks ip echo service (httpbin.org)', async () => {
+  const { proxyRoute } = await import('../../src/routes/cors-proxy/index.ts')
+  const app = new Hono()
+  app.route('/', proxyRoute)
+  const r = await app.request('/proxy/https://httpbin.org/ip')
+  assertEquals(r.status, 400)
+  assertEquals((await r.json()).error, 'blocked ip-echo domain: httpbin.org')
+})
+
+Deno.test('proxy blocks ip echo subdomain (api.ipify.org)', async () => {
+  const { proxyRoute } = await import('../../src/routes/cors-proxy/index.ts')
+  const app = new Hono()
+  app.route('/', proxyRoute)
+  const r = await app.request('/proxy/https://api.ipify.org?format=json')
+  assertEquals(r.status, 400)
+  assertEquals((await r.json()).error, 'blocked ip-echo domain: api.ipify.org')
+})
+
+Deno.test('proxy allows ip echo when PROXY_ALLOW_IP_ECHO=1', async () => {
+  Deno.env.set('PROXY_ALLOW_IP_ECHO', '1')
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async (): Promise<Response> => {
+    return new Response('{"origin":"203.0.113.7"}', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  }
+
+  try {
+    const { proxyRoute } = await import('../../src/routes/cors-proxy/index.ts')
+    const app = new Hono()
+    app.route('/', proxyRoute)
+    const r = await app.request('/proxy/https://httpbin.org/ip')
+    assertEquals(r.status, 200)
+    assertEquals(await r.text(), '{"origin":"203.0.113.7"}')
+  } finally {
+    Deno.env.delete('PROXY_ALLOW_IP_ECHO')
+    globalThis.fetch = originalFetch
+  }
+})
+
 Deno.test('proxy service - handles HTTP errors', async () => {
   const originalFetch = globalThis.fetch
   globalThis.fetch = async (): Promise<Response> => {

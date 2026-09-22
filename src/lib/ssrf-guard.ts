@@ -3,6 +3,71 @@ const PRIVATE_RE =
 
 const METADATA_HOSTS = ['169.254.169.254', 'metadata.google.internal', '100.100.100.200']
 
+/**
+ * Built-in blocklist of IP-echo / request-echo services.
+ *
+ * Routes that fetch user-supplied URLs (CORS proxy, /api/webp/, saucenao,
+ * illuminarty, ugoira…) forward requests from THIS server, so the remote
+ * target sees the server's own egress IP. Allowing users to proxy an IP-echo
+ * service (e.g. /proxy/https://httpbin.org/ip) turns the API into a public
+ * oracle disclosing that IP — a problem when the origin sits behind a CDN or
+ * runs on a home connection. This list is best-effort defense in depth (an
+ * attacker-controlled domain can never be fully blocked here); combine it
+ * with PROXY_ALLOW_DOMAINS for real isolation.
+ * Set PROXY_ALLOW_IP_ECHO=1 to disable this built-in list.
+ */
+const IP_ECHO_BLOCKLIST = [
+  // Generic HTTP echo / request-inspection services (reflect the caller's IP)
+  'httpbin.org',
+  'httpstat.us',
+  'postman-echo.com',
+  'webhook.site',
+  // Dedicated IP echo / lookup services
+  'canhazip.com',
+  'checkip.amazonaws.com',
+  'checkip.dyndns.com',
+  'checkip.dyndns.org',
+  'cip.cc',
+  'geojs.io',
+  'icanhazip.com',
+  'ident.me',
+  'ifconfig.co',
+  'ifconfig.me',
+  'ip-api.com',
+  'ip.3322.net',
+  'ip111.cn',
+  'ip138.com',
+  'ip.cn',
+  'ip.sb',
+  'ip.im',
+  'ipshu.com',
+  'ip2location.io',
+  'ipapi.co',
+  'ipapi.com',
+  'ipcheck.ing',
+  'ipdata.co',
+  'ipgeolocation.io',
+  'ipify.org',
+  'ipinfo.io',
+  'ipinfo.tw',
+  'ipip.net',
+  'ipecho.net',
+  'ipwho.is',
+  'ipwhois.app',
+  'myexternalip.com',
+  'myip.com',
+  'seeip.org',
+  'whatismyip.com',
+  'whatismyipaddress.com',
+  'wtfismyip.com',
+]
+
+/** Match a hostname against IP_ECHO_BLOCKLIST: exact entry or any subdomain (api.ipify.org → ipify.org). */
+function isIpEchoHost(hostname: string): boolean {
+  const h = hostname.toLowerCase()
+  return IP_ECHO_BLOCKLIST.some(d => h === d || h.endsWith(`.${d}`))
+}
+
 const DNS_CACHE_TTL_MS = 60_000
 const DNS_TIMEOUT_MS = 2_000
 
@@ -155,6 +220,12 @@ export async function assertSafeUrl(input: string, opts?: { allowPrivate?: boole
       .filter(Boolean) ?? []
   if (block.some(d => (d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d))) {
     throw new Error(`blocked domain: ${u.hostname}`)
+  }
+
+  // Built-in IP-echo blocklist (see IP_ECHO_BLOCKLIST) — applies to every
+  // assertSafeUrl caller so variant paths like /api/webp/ are covered too.
+  if (Deno.env.get('PROXY_ALLOW_IP_ECHO') != '1' && isIpEchoHost(u.hostname)) {
+    throw new Error(`blocked bad request`)
   }
 
   // DNS resolution check for non-literal-IP hostnames (nip.io bypass prevention)

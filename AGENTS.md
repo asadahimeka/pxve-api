@@ -205,6 +205,7 @@ route.get(
 - `PROXY_ALLOW_DOMAINS` — allowed proxy domains (comma-separated, `*.domain` for subdomains)
 - `PROXY_BLOCK_DOMAINS` — blocked proxy domains (comma-separated, `*.domain` for subdomains)
 - `PROXY_BLOCK_PRIVATE` — block private/reserved IPs (default: 1)
+- `PROXY_ALLOW_IP_ECHO` — set to `1` to disable the built-in blocklist of IP-echo/echo services (httpbin.org, ifconfig.me, api.ipify.org, …) enforced in `src/lib/ssrf-guard.ts`; without it, proxying such domains is rejected because the target would see the server's own egress IP
 - `MAX_DOWNLOAD_BYTES` — download size limit in bytes (default: 52428800 / 50MB)
 - `UGOIRA_MAX_ZIP_BYTES` — ugoira ZIP size limit in bytes (default: 52428800 / 50MB)
 - `API_TOKEN` — API access token; when set, all paths except the `/docs` / `/swagger` whitelist require it, sent as `Authorization: Bearer <API_TOKEN>` or via the dedicated `X-Api-Token` header. The latter exists so routes that forward `Authorization` upstream (e.g. the `/pixiv-app-api/*`, `/pixiv-oauth/*` proxy carrying the user's Pixiv access token) can still authenticate against the gateway without colliding on the same header; `X-Api-Token` is consumed by the gateway and never forwarded upstream
