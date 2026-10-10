@@ -1,7 +1,16 @@
-import { join } from '@std/path'
-import { ensureDir } from '@std/fs'
+import { join } from 'node:path'
+import { parentPort } from 'node:worker_threads'
 import { UA_HEADER } from '#lib/const.ts'
-import { getNumberEnv } from '#lib/runtime.ts'
+import {
+  ensureDirRecursive,
+  getNumberEnv,
+  makeTempDir,
+  platformIsWindows,
+  readFile,
+  removeRecursive,
+  runCmd,
+  writeFile,
+} from '#lib/runtime.ts'
 import { assertSafeUrl } from '#lib/ssrf-guard.ts'
 import { pixivWebApi } from '../pixiv/web-api.ts'
 
@@ -17,8 +26,12 @@ export function isSafeZipEntry(name: string): boolean {
 
 export type UgoiraConvertExt = 'mp4' | 'gif' | 'apng' | 'webp' | 'webm' | 'avif'
 
-self.onmessage = async event => {
-  let { zip, rate, id, ext = 'avif' } = event.data
+// Registered only inside a real worker thread. Main-thread imports (e.g. unit
+// tests for isSafeZipEntry) see parentPort === null and skip registration.
+const port = parentPort
+if (port) {
+port.on('message', async event => {
+  let { zip, rate, id, ext = 'avif' } = event
 
   try {
     if (!rate) rate = 16
@@ -28,10 +41,11 @@ self.onmessage = async event => {
 
     const buf = await downloadAndConvert(zip, rate, id, ext)
 
-    self.postMessage({ status: 'success', data: buf })
+    port.postMessage({ status: 'success', data: buf })
   } catch (error: any) {
-    self.postMessage({ status: 'error', error: error.message })
+    port.postMessage({ status: 'error', error: error.message })
   }
+})
 }
 
 async function getMetadata(id: number) {
@@ -61,23 +75,22 @@ async function downloadAndUnzip(zipUrl: string, outputDir: string) {
     throw new Error(`zip too large: ${zipData.length} bytes exceeds limit of ${UGOIRA_MAX_ZIP_BYTES}`)
   }
 
-  await ensureDir(outputDir)
+  await ensureDirRecursive(outputDir)
   const zipPath = join(outputDir, 'ugoira.zip')
-  await Deno.writeFile(zipPath, zipData)
+  await writeFile(zipPath, zipData)
 
   // Validate zip entries before extraction to prevent path traversal attacks
   await validateZipEntries(zipPath)
 
   let cmd = 'unzip'
   let args = ['-o', zipPath, '-d', outputDir]
-  if (Deno.build.os === 'windows') {
+  if (platformIsWindows()) {
     cmd = 'PowerShell'
     args = ['Expand-Archive', '-Path', `"${zipPath}"`, '-DestinationPath', `"${outputDir}"`, '-Force']
   }
   console.log(cmd, args.join(' '))
-  const unzip = new Deno.Command(cmd, { args })
+  const { success, stderr } = await runCmd(cmd, args)
 
-  const { success, stderr } = await unzip.output()
   console.log('unzip success: ', success)
   if (!success) {
     const decoder = new TextDecoder()
@@ -94,7 +107,7 @@ async function validateZipEntries(zipPath: string) {
   let cmd: string
   let args: string[]
 
-  if (Deno.build.os === 'windows') {
+  if (platformIsWindows()) {
     cmd = 'PowerShell'
     args = [
       '-NoProfile',
@@ -106,12 +119,10 @@ async function validateZipEntries(zipPath: string) {
     args = ['-1', zipPath]
   }
 
-  const proc = new Deno.Command(cmd, { args, stdout: 'piped', stderr: 'piped' })
-  const { success, stdout, stderr } = await proc.output()
+  const { success, stdout, stderr } = await runCmd(cmd, args)
   if (!success) {
     // Fallback: try unzip -l on systems without zipinfo
-    const fallback = new Deno.Command('unzip', { args: ['-l', zipPath], stdout: 'piped', stderr: 'piped' })
-    const fb = await fallback.output()
+    const fb = await runCmd('unzip', ['-l', zipPath])
     if (!fb.success) {
       throw new Error('Failed to list zip entries')
     }
@@ -169,9 +180,7 @@ async function convertImages(imagesDir: string, outputFilePath: string, rate: st
   if (!args) throw new Error('Invalid extension')
 
   console.log('ffmpeg', args.join(' '))
-  const ffmpeg = new Deno.Command('ffmpeg', { args })
-
-  const { success, stderr, stdout } = await ffmpeg.output()
+  const { success, stderr, stdout } = await runCmd('ffmpeg', args)
   const decoder = new TextDecoder()
   console.log('ffmpeg success: ', success, decoder.decode(stdout))
   if (!success) {
@@ -181,17 +190,17 @@ async function convertImages(imagesDir: string, outputFilePath: string, rate: st
 }
 
 async function downloadAndConvert(zipUrl: string, rate: string, id: string, ext: UgoiraConvertExt = 'avif') {
-  const tempDir = await Deno.makeTempDir()
+  const tempDir = await makeTempDir()
   try {
     const imagesDir = join(tempDir, `images_${id}`)
     const outputFilePath = join(tempDir, `${id}.${ext}`)
 
     await downloadAndUnzip(zipUrl, imagesDir)
     await convertImages(imagesDir, outputFilePath, rate, ext)
-    const data = await Deno.readFile(outputFilePath)
+    const data = await readFile(outputFilePath)
 
     return data
   } finally {
-    await Deno.remove(tempDir, { recursive: true }).catch(() => {})
+    await removeRecursive(tempDir).catch(() => {})
   }
 }

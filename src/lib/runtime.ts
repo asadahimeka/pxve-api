@@ -8,6 +8,20 @@
  * entry (`src/server.ts`) runs on Node.
  */
 
+import { execFile } from 'node:child_process'
+import {
+  mkdir as fsMkdir,
+  mkdtemp as fsMkdtemp,
+  readFile as fsReadFile,
+  rm as fsRm,
+  writeFile as fsWriteFile,
+} from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { promisify } from 'node:util'
+
+const execFileAsync = promisify(execFile)
+
 interface NodeProcessLike {
   env?: Record<string, string | undefined>
   argv?: string[]
@@ -46,4 +60,65 @@ export function getCommaEnv(name: string): string[] {
 
 export function hasFlag(flag: string): boolean {
   return nodeProcess()?.argv?.includes(flag) || denoNs()?.args?.includes(flag) || false
+}
+
+export function platformIsWindows(): boolean {
+  const platform = nodeProcess()?.platform
+  if (typeof platform === 'string') return platform === 'win32'
+  const d = (globalThis as unknown as { Deno?: { build?: { os?: string } } }).Deno
+  return d?.build?.os === 'windows'
+}
+
+export function makeTempDir(prefix = 'pxve-'): Promise<string> {
+  return fsMkdtemp(join(tmpdir(), prefix))
+}
+
+export async function ensureDirRecursive(path: string): Promise<void> {
+  await fsMkdir(path, { recursive: true })
+}
+
+export async function writeFile(path: string, data: Uint8Array): Promise<void> {
+  await fsWriteFile(path, data)
+}
+
+export async function readFile(path: string): Promise<Uint8Array> {
+  return fsReadFile(path)
+}
+
+export async function removeRecursive(path: string): Promise<void> {
+  await fsRm(path, { recursive: true, force: true })
+}
+
+export interface CmdResult {
+  success: boolean
+  stdout: Uint8Array
+  stderr: Uint8Array
+}
+
+/**
+ * Run an executable directly, no shell (matches old `new Deno.Command(cmd, {args})`).
+ * Non-zero exit resolves `{success: false}` with captured output; a timeout
+ * (or being killed) throws so callers can distinguish hangs from failures.
+ */
+export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: number }): Promise<CmdResult> {
+  try {
+    const { stdout, stderr } = await execFileAsync(cmd, args, {
+      timeout: opts?.timeoutMs,
+      maxBuffer: 16 * 1024 * 1024,
+      encoding: 'buffer',
+    })
+    return { success: true, stdout: stdout as Uint8Array, stderr: stderr as Uint8Array }
+  } catch (e: any) {
+    if (e?.killed) {
+      throw new Error(`command timeout after ${opts?.timeoutMs}ms: ${cmd} ${args.join(' ')}`)
+    }
+    if (typeof e?.code === 'number') {
+      return {
+        success: false,
+        stdout: e.stdout ?? new Uint8Array(),
+        stderr: e.stderr ?? new Uint8Array(),
+      }
+    }
+    throw e
+  }
 }

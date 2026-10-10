@@ -4,7 +4,11 @@ import sharp from 'sharp'
 // N workers share one libuv thread pool: cap each worker to avoid starvation.
 sharp.concurrency(1)
 
-parentPort!.on('message', async event => {
+// Registered only inside a real worker thread; main-thread imports skip it
+// (parentPort is null outside a worker).
+const port = parentPort
+if (port) {
+port.on('message', async event => {
   const { inputBuffer, options = {} } = event
 
   try {
@@ -29,8 +33,9 @@ parentPort!.on('message', async event => {
       compressedImage = await sharp(new Uint8Array(inputBuffer)).webp(webpOpts).toBuffer()
     }
 
-    parentPort!.postMessage({ status: 'success', data: compressedImage })
+    port.postMessage({ status: 'success', data: compressedImage })
   } catch (error: any) {
-    parentPort!.postMessage({ status: 'error', error: error.message })
+    port.postMessage({ status: 'error', error: error.message })
   }
 })
+}
