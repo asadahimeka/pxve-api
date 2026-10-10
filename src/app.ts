@@ -1,9 +1,10 @@
+import { fileURLToPath } from 'node:url'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { etag } from 'hono/etag'
 import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
-import { serveStatic } from 'hono/deno'
+import { serveStatic } from '@hono/node-server/serve-static'
 import { createOpenApiDocument } from 'hono-zod-openapi'
 import { Scalar } from '@scalar/hono-api-reference'
 import { swaggerUI } from '@hono/swagger-ui'
@@ -51,8 +52,11 @@ if (!hasFlag('--dev') && getEnv('ENABLE_CACHE') == '1') {
 
 app.route('/', routes)
 
-app.get('/robots.txt', serveStatic({ path: './public/robots.txt' }))
-app.get('/favicon.ico', serveStatic({ path: './public/favicon.ico' }))
+// @hono/node-server/serve-static resolves `root` against process.cwd(),
+// so anchor it to the repo root explicitly instead of relying on cwd.
+const repoRoot = fileURLToPath(new URL('../', import.meta.url))
+app.get('/robots.txt', serveStatic({ root: repoRoot, path: './public/robots.txt' }))
+app.get('/favicon.ico', serveStatic({ root: repoRoot, path: './public/favicon.ico' }))
 
 const description = /* markdown */ `
 **API Service for [Pixiv Viewer](https://pixiv.pictures)**
@@ -85,7 +89,7 @@ createOpenApiDocument(
 )
 
 const cdn = 'https://unpkg.com/@scalar/api-reference@1.43.11/dist/browser/standalone.js'
-app.get('/openapi-hibiapi.json', serveStatic({ path: './public/openapi-hibiapi.json' }))
+app.get('/openapi-hibiapi.json', serveStatic({ root: repoRoot, path: './public/openapi-hibiapi.json' }))
 app.get('/docs', Scalar({ url: '/openapi.json', theme: 'elysiajs', pageTitle: 'Pxve API', cdn }))
 app.get('/docs/hibiapi', Scalar({ url: '/openapi-hibiapi.json', theme: 'purple', pageTitle: 'HibiAPI', cdn }))
 app.get('/swagger', swaggerUI({ url: '/openapi.json' }))
@@ -93,17 +97,5 @@ app.get('/swagger/hibiapi', swaggerUI({ url: '/openapi-hibiapi.json' }))
 
 app.notFound(c => c.json({ error: 'Not Found' }, 404))
 app.onError((err, c) => c.json(toPublicError(err), 500))
-
-const deduper = new RequestDeduper()
-const port = getNumberEnv('PORT', 3021)
-Deno.serve({ hostname: '0.0.0.0', port }, (req, ...args) => {
-  const skipDeduper = Boolean(
-    req.method.toUpperCase() != 'GET' ||
-    req.headers.get('authorization') ||
-    req.headers.get('x-auth') ||
-    req.headers.get('cookie')?.includes('PHPSESSID')
-  )
-  return skipDeduper ? app.fetch(req, ...args) : deduper.run(req.url, async () => await app.fetch(req, ...args))
-})
 
 export { app }

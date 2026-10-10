@@ -77,7 +77,11 @@ function solve(value: number, minVal: number, maxVal: number, rounding: boolean)
 
 /** Port of x_client_transaction/cubic_curve.py Cubic. */
 export class Cubic {
-  constructor(readonly curves: number[]) {}
+  readonly curves: number[]
+
+  constructor(curves: number[]) {
+    this.curves = curves
+  }
 
   getValue(time: number): number {
     let startGradient = 0.0

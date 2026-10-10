@@ -1,5 +1,5 @@
 import type { Context, MiddlewareHandler } from 'hono'
-import { getConnInfo } from 'hono/deno'
+import { getConnInfo } from '@hono/node-server/conninfo'
 import { getEnv } from '#lib/runtime.ts'
 
 const STORE_MAX = 5000

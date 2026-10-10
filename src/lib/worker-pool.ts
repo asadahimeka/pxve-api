@@ -15,10 +15,12 @@ export class WorkerPool {
   private taskQueue: Task[] = []
   private activeWorkers = 0
 
-  constructor(
-    private readonly workerUrl: string,
-    private readonly maxWorkers = 10
-  ) {
+  private readonly workerUrl: string
+  private readonly maxWorkers: number
+
+  constructor(workerUrl: string, maxWorkers = 10) {
+    this.workerUrl = workerUrl
+    this.maxWorkers = maxWorkers
     if (!Number.isInteger(maxWorkers) || maxWorkers <= 0) {
       throw new Error('maxWorkers must be a positive integer')
     }
