@@ -2,20 +2,25 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "deno",
-      "command": "task",
-      "args": ["dev"],
-      "problemMatcher": ["$deno"],
-      "label": "deno: dev",
-      "detail": "$ deno run --watch --env --allow-all ./src/app.ts --dev"
+      "type": "shell",
+      "command": "pnpm dev",
+      "options": { "cwd": "${workspaceFolder}" },
+      "label": "node: dev",
+      "detail": "$ node --env-file-if-exists=.env --watch src/server.ts --dev"
     },
     {
-      "type": "deno",
-      "command": "task",
-      "args": ["start"],
-      "problemMatcher": ["$deno"],
-      "label": "deno: start",
-      "detail": "$ deno run --env --allow-all ./src/app.ts"
+      "type": "shell",
+      "command": "pnpm start",
+      "options": { "cwd": "${workspaceFolder}" },
+      "label": "node: start",
+      "detail": "$ node --env-file-if-exists=.env src/server.ts"
+    },
+    {
+      "type": "shell",
+      "command": "pnpm test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "label": "node: test",
+      "detail": "$ node --env-file-if-exists=.env --test \"tests/**/*.test.ts\""
     }
   ]
 }

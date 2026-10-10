@@ -7,7 +7,7 @@ export const xMediaRoute = new Hono().get(
   '/x/media',
   openApi({
     description: `获取 X(Twitter) 用户的媒体推文<br>
-原生 Deno 实现，无需 Python 环境<br>
+原生 Node.js 实现，无需 Python 环境<br>
 示例：\`/api/x/media?userName=k_rity\`<br>
 第一次请求可只传入 \`userName\`, 从返回结果里获取 \`user_id\` 和 \`next_cursor\` 以供后续请求
 `,

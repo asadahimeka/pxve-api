@@ -1,6 +1,6 @@
 # Pxve API
 
-[![Deno](https://img.shields.io/badge/Deno-2-blue.svg)](https://deno.land/)
+[![Node.js](https://img.shields.io/badge/Node.js-24-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Hono](https://img.shields.io/badge/Hono-E36002.svg?style=flat&logo=Hono&logoColor=white)](https://hono.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/asadahimeka/pxve-api)
@@ -30,7 +30,7 @@ API Documentation: [api.pxve.cc/docs](https://api.pxve.cc/docs)
 
 ### Requirements
 
-Deno 2.x / unzip / ffmpeg
+Node.js ≥ 24.10 / pnpm / unzip / ffmpeg
 
 ### Installation & Running
 
@@ -51,13 +51,13 @@ cp .env.example .env
 3. **Run in development mode**
 
 ```bash
-deno task dev
+pnpm dev
 ```
 
 4. **Run in production mode**
 
 ```bash
-deno task start
+pnpm start
 ```
 
 ### Docker Deployment
@@ -76,8 +76,9 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 
 | Environment Variable | Description                    | Default |
 | -------------------- | ------------------------------ | ------- |
-| `PORT`               | Service listening port         | `3021`  |
-| `ENABLE_CACHE`       | Enable GET request cache (1/0) | `0`     |
+| `PORT`               | Service listening port         | `3021`          |
+| `ENABLE_CACHE`       | Enable GET request cache (1/0) | `0`             |
+| `CACHE_DIR`          | File cache dir (relative paths resolve against the repo root; mount a VOLUME for it in Docker) | `./.cache/http` |
 
 ### Security Configuration
 
@@ -142,19 +143,19 @@ After starting the service, the API documentation can be accessed at:
 
 ```bash
 # Development mode (hot reload)
-deno task dev
+pnpm dev
 
 # Production mode
-deno task start
+pnpm start
 
 # Type checking
-deno task type-check
+pnpm type-check
 
-# Linting
-deno task lint
+# Testing
+pnpm test
 
 # Cache management
-deno task manage-cache
+pnpm manage-cache
 ```
 
 ## 📁 Project Structure
@@ -170,14 +171,15 @@ pxve-api/
 ├── scripts/               # Script tools
 ├── public/                # Static assets
 ├── .env.example           # Environment variable template
-├── deno.json              # Deno configuration
+├── package.json             # Node.js config & dependencies (incl. `#lib` / `#services` path mappings)
+├── pnpm-lock.yaml           # Dependency lockfile
 ├── Dockerfile             # Docker configuration
 └── README.md              # Project documentation
 ```
 
 ## 🔧 Tech Stack
 
-- **Runtime**: Deno
+- **Runtime**: Node.js ≥ 24.10
 - **Framework**: Hono
 - **API Documentation**: Swagger UI + Scalar
 - **Image Processing**: Sharp

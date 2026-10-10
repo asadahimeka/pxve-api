@@ -1,11 +1,7 @@
 /**
- * Runtime adapter: the only place (besides `node:`-native modules that stay
- * as-is) allowed to touch environment/argv/platform differences.
- *
- * Dual-read strategy: prefer `process.env`/`process.argv` (Node), fall back
- * to `Deno.env`/`Deno.args` when running under Deno. This keeps the existing
- * `deno task test` suite green during the migration while the production
- * entry (`src/server.ts`) runs on Node.
+ * Runtime adapter: the single place for environment/argv/platform access,
+ * plus thin wrappers over subprocess, fs, tempdir and DNS primitives so
+ * callers never touch platform specifics directly.
  */
 
 import { execFile } from 'node:child_process'
@@ -23,29 +19,8 @@ import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
-interface NodeProcessLike {
-  env?: Record<string, string | undefined>
-  argv?: string[]
-  platform?: string
-}
-
-interface DenoLike {
-  env?: { get?: (key: string) => string | undefined }
-  args?: string[]
-}
-
-function nodeProcess(): NodeProcessLike | undefined {
-  const p = (globalThis as unknown as { process?: NodeProcessLike }).process
-  return p && typeof p === 'object' ? p : undefined
-}
-
-function denoNs(): DenoLike | undefined {
-  const d = (globalThis as unknown as { Deno?: DenoLike }).Deno
-  return d && typeof d === 'object' ? d : undefined
-}
-
 export function getEnv(name: string, fallback?: string): string | undefined {
-  return nodeProcess()?.env?.[name] ?? denoNs()?.env?.get?.(name) ?? fallback
+  return process.env[name] ?? fallback
 }
 
 export function getNumberEnv(name: string, fallback: number): number {
@@ -61,14 +36,11 @@ export function getCommaEnv(name: string): string[] {
 }
 
 export function hasFlag(flag: string): boolean {
-  return nodeProcess()?.argv?.includes(flag) || denoNs()?.args?.includes(flag) || false
+  return process.argv.includes(flag)
 }
 
 export function platformIsWindows(): boolean {
-  const platform = nodeProcess()?.platform
-  if (typeof platform === 'string') return platform === 'win32'
-  const d = (globalThis as unknown as { Deno?: { build?: { os?: string } } }).Deno
-  return d?.build?.os === 'windows'
+  return process.platform === 'win32'
 }
 
 export function makeTempDir(prefix = 'pxve-'): Promise<string> {
@@ -98,9 +70,9 @@ export interface CmdResult {
 }
 
 /**
- * Run an executable directly, no shell (matches old `new Deno.Command(cmd, {args})`).
- * Non-zero exit resolves `{success: false}` with captured output; a timeout
- * (or being killed) throws so callers can distinguish hangs from failures.
+ * Run an executable directly, no shell. Non-zero exit resolves
+ * `{success: false}` with captured output; a timeout (or being killed)
+ * throws so callers can distinguish hangs from failures.
  */
 export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: number }): Promise<CmdResult> {
   try {
@@ -126,10 +98,10 @@ export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: n
 }
 
 /**
- * Resolve a hostname to IPv4+IPv6 strings (matches old `Deno.resolveDns`
- * A/AAAA usage). Each record type fails independently to []; total failure
- * yields []. A fresh Resolver per call gives native timeout/tries; an outer
- * race guarantees the caller never hangs past timeoutMs.
+ * Resolve a hostname to IPv4+IPv6 strings. Each record type fails
+ * independently to []; total failure yields []. A fresh Resolver per call
+ * gives native timeout/tries; an outer race guarantees the caller never
+ * hangs past timeoutMs.
  *
  * NOTE: node:dns resolve4/resolve6 ignore AbortSignal (silently), so callers
  * must not pass a signal expecting cancellation — use timeoutMs instead.
@@ -148,8 +120,7 @@ export async function resolveHost(host: string, opts?: { timeoutMs?: number }): 
           ])
           return [...v4, ...v6]
         } finally {
-          // Best-effort cleanup: Deno's Resolver.cancel() throws internally,
-          // the outer race timer is the real hang guarantee.
+          // Best-effort cleanup; the outer race timer is the real hang guarantee.
           try {
             resolver.cancel()
           } catch {

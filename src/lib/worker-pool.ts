@@ -58,7 +58,6 @@ export class WorkerPool {
     }
 
     let settled = false
-    // deno-lint-ignore prefer-const
     let timeoutId: ReturnType<typeof setTimeout> | undefined
 
     const finish = (fn: () => void) => {

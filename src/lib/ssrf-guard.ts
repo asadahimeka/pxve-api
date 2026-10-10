@@ -82,7 +82,7 @@ const DNS_CACHE_MAX_SIZE = 1000
  * Handles IPv4 private ranges, IPv6 loopback/unique-local/link-local, and IPv4-mapped IPv6.
  */
 function isPrivateHost(hostname: string): boolean {
-  // Strip brackets from IPv6 hostnames (Deno includes them in hostname)
+  // Strip brackets from IPv6 hostnames (URL retains them in hostname)
   const h = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname
 
   // IPv4 private ranges (existing)
@@ -102,8 +102,8 @@ function isPrivateHost(hostname: string): boolean {
   // So valid range: fe80, fe81, ..., febf → fe[89ab][0-9a-f]
   if (/^fe[89ab]/i.test(h)) return true
 
-  // ::ffff:0:0/96 — IPv4-mapped IPv6 addresses
-  // Deno normalizes to ::ffff:<hex1>:<hex2> (e.g., ::ffff:c0a8:101 for 192.168.1.1)
+  // ::ffff:0:0/96 — IPv4-mapped IPv6 addresses, seen as ::ffff:<hex1>:<hex2>
+  // (e.g., ::ffff:c0a8:101 for 192.168.1.1)
   // Tolerate leading-zero hextets: ::ffff:0:c0a8:101, ::ffff:0:0:c0a8:101, etc.
   const ffffMatch = h.match(/^::ffff:(?:0+:)*([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
   if (ffffMatch) {

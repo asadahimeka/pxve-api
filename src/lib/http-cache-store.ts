@@ -47,9 +47,8 @@ function buildResponse(meta: CacheEntryMeta, body: Uint8Array): Response {
   const headers = new Headers(meta.headers)
   for (const sc of meta.setCookie) headers.append('set-cookie', sc)
   // Copy out of any pooled backing store (fs.readFile may return a pooled
-  // view with non-zero byteOffset). Plain ArrayBuffer keeps both tsc and
-  // deno check happy (Uint8Array<ArrayBufferLike> is not BodyInit to tsc,
-  // Buffer is unknown to deno check).
+  // view with non-zero byteOffset). A plain ArrayBuffer is accepted as
+  // BodyInit by both tsc's DOM lib and runtime Response.
   const bytes = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer
   return new Response(bytes, { status: meta.status, headers })
 }

@@ -1,6 +1,6 @@
 # Pxve API
 
-[![Deno](https://img.shields.io/badge/Deno-2-blue.svg)](https://deno.land/)
+[![Node.js](https://img.shields.io/badge/Node.js-24-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Hono](https://img.shields.io/badge/Hono-E36002.svg?style=flat&logo=Hono&logoColor=white)](https://hono.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/asadahimeka/pxve-api)
@@ -30,7 +30,7 @@ API 文档：[api.pxve.cc/docs](https://api.pxve.cc/docs)
 
 ### 环境要求
 
-Deno 2.x / unzip / ffmpeg
+Node.js ≥ 24.10 / pnpm / unzip / ffmpeg
 
 ### 安装运行
 
@@ -51,13 +51,13 @@ cp .env.example .env
 3. **开发模式运行**
 
 ```bash
-deno task dev
+pnpm dev
 ```
 
 4. **生产模式运行**
 
 ```bash
-deno task start
+pnpm start
 ```
 
 ### Docker 部署
@@ -76,8 +76,9 @@ docker run -d -p 3021:3021 --env-file .env pxve-api
 
 | 环境变量       | 说明                        | 默认值 |
 | -------------- | --------------------------- | ------ |
-| `PORT`         | 服务监听端口                | `3021` |
-| `ENABLE_CACHE` | 是否启用 GET 请求缓存 (1/0) | `0`    |
+| `PORT`         | 服务监听端口                | `3021`         |
+| `ENABLE_CACHE` | 是否启用 GET 请求缓存 (1/0) | `0`            |
+| `CACHE_DIR`    | 文件缓存目录（相对路径以仓库根目录为基准，Docker 部署时挂载 VOLUME 持久化） | `./.cache/http` |
 
 ### 安全配置
 
@@ -175,19 +176,19 @@ X_MEDIA_COOKIES='{"auth_token":"xxxx","ct0":"yyyy"}'
 
 ```bash
 # 开发模式（热重载）
-deno task dev
+pnpm dev
 
 # 生产模式
-deno task start
+pnpm start
 
 # 类型检查
-deno task type-check
+pnpm type-check
 
-# 代码检查
-deno task lint
+# 测试
+pnpm test
 
 # 缓存管理
-deno task manage-cache
+pnpm manage-cache
 ```
 
 ## 📁 项目结构
@@ -203,14 +204,15 @@ pxve-api/
 ├── scripts/               # 脚本工具
 ├── public/                # 静态资源
 ├── .env.example           # 环境变量模板
-├── deno.json              # Deno 配置
+├── package.json             # Node.js 配置与依赖（含 `#lib` / `#services` 路径映射）
+├── pnpm-lock.yaml           # 依赖锁文件
 ├── Dockerfile             # Docker 配置
 └── README.md              # 项目说明
 ```
 
 ## 🔧 技术栈
 
-- **运行时**: Deno
+- **运行时**: Node.js ≥ 24.10
 - **框架**: Hono
 - **API 文档**: Swagger UI + Scalar
 - **图片处理**: Sharp

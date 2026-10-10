@@ -50,7 +50,14 @@ test('pixiv-api-proxy - forwards auth headers', async () => {
   let capturedHeaders: Record<string, string> = {}
 
   globalThis.fetch = async (_input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    capturedHeaders = (init?.headers as Record<string, string>) || {}
+    // hono/proxy calls fetch(request): forwarded headers live on the Request
+    // object, init is undefined. Normalize both shapes before reading.
+    const req = _input instanceof Request ? _input : new Request(_input, init)
+    capturedHeaders = {
+      'Authorization': req.headers.get('Authorization') || '',
+      'X-Client-Time': req.headers.get('X-Client-Time') || '',
+      'X-Client-Hash': req.headers.get('X-Client-Hash') || '',
+    }
     return new Response('mock', { status: 200 })
   }
 

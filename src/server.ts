@@ -6,7 +6,7 @@ import { getNumberEnv } from '#lib/runtime.ts'
 const deduper = new RequestDeduper()
 const port = getNumberEnv('PORT', 3021)
 
-// Same semantics as the former Deno.serve handler: GET requests without
+// Same semantics as before: GET requests without auth headers share
 // auth headers share in-flight upstream fetches via RequestDeduper.
 function dedupedFetch(req: Request, ...args: any[]) {
   const skipDeduper = Boolean(

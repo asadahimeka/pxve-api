@@ -7,15 +7,15 @@
 - 通过用户名或用户 ID 获取 X 用户的媒体推文
 - 支持分页获取（使用 cursor）
 - 返回推文的详细信息，包括媒体文件（图片、视频）
-- 使用 Deno + Python 混合架构
+- 使用 Node.js 原生实现（无子进程）
 
 ## 🛠️ 环境要求
 
 ### 运行环境
 
-- **Deno 版本**: 2.x（与主项目保持一致）
-- 无需 Python 环境（服务已于 2026-09 改为原生 Deno 实现，详见 `api.ts` / `transaction.ts`）
-- 原 `X_MEDIA_MAX_CONCURRENCY` 并发闸门已随 Python 子进程移除（纯 Deno 实现无进程开销，不再需要）
+- **Node.js 版本**: >= 24.10（与主项目保持一致）
+- 无需 Python 环境（服务已于 2026-09 改为原生实现，详见 `api.ts` / `transaction.ts`）
+- 原 `X_MEDIA_MAX_CONCURRENCY` 并发闸门已随 Python 子进程移除（纯原生实现无进程开销，不再需要）
 
 ## 📦 安装配置
 
@@ -104,7 +104,7 @@ PaaS 等无文件平台直接用 `X_MEDIA_COOKIES` 环境变量即可（见上�
 
 1. **热更新有效**：实现为每次请求重读该文件，宿主机上修改后立即生效，无需重启容器或重建镜像。
 2. **单文件挂载的 inode 陷阱**：若在宿主机上用 `mv` / "另存为新文件" 的方式替换，容器仍指向旧 inode。更新时请**原地写入**（`cat new_cookies.json > cookies.json`），或更新后 `docker restart`（无需重建镜像）。
-3. **权限**：镜像以 `deno` 用户（非 root）运行，宿主机文件保证该用户可读即可（如 `chmod 644`；`:ro` 挂载无需写权限）。
+3. **权限**：镜像以 `node` 用户（非 root）运行，宿主机文件保证该用户可读即可（如 `chmod 644`；`:ro` 挂载无需写权限）。
 
 ## 🚀 使用方法
 
@@ -242,7 +242,7 @@ python fetch_x_media.py --user elonmusk --cursor "cursor_string"
 
 - [twikit 官方文档](https://github.com/d60/twikit)
 - [X API 文档](https://developer.twitter.com/en/docs/twitter-api)
-- [Deno 官方文档](https://deno.land/)
+- [Node.js 官方文档](https://nodejs.org/)
 
 ## 🤝 贡献
 

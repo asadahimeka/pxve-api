@@ -221,14 +221,14 @@ const altTokens = PIXIV_ACCOUNT_TOKEN_ALTS?.filter(e => e && e != token) || []
 
 ```typescript
 // Use the PixivApi class with automatic token refresh
-import { withPixivRefresh } from '@services/pixiv/action.ts'
+import { withPixivRefresh } from '#services/pixiv/action.ts'
 
 async function getIllustDetail(id: string) {
   return withPixivRefresh(() => pixiv.illustDetail({ id }))
 }
 
 // For proxy requests, use the standardized headers
-import { PIXIV_API_HEADERS } from '@lib/const.ts'
+import { PIXIV_API_HEADERS } from '#lib/const.ts'
 
 const headers = { ...PIXIV_API_HEADERS }
 ```
@@ -237,7 +237,7 @@ const headers = { ...PIXIV_API_HEADERS }
 
 ```typescript
 // Always use proper User-Agent headers
-import { UA_HEADER } from '@lib/const.ts'
+import { UA_HEADER } from '#lib/const.ts'
 
 const response = await fetch(url, {
   headers: UA_HEADER,
@@ -269,7 +269,9 @@ export function customLogger(): MiddlewareHandler {
 
 ```typescript
 // Use built-in cache for GET responses when enabled
-if (!Deno.args.includes('--dev') && Deno.env.get('ENABLE_CACHE') == '1') {
+import { getEnv, getNumberEnv, hasFlag } from '#lib/runtime.ts'
+
+if (!hasFlag('--dev') && getEnv('ENABLE_CACHE') == '1') {
   app.get(
     '*',
     cache({
@@ -289,12 +291,12 @@ For CPU-intensive operations like image processing:
 
 ```typescript
 // Use worker pools for heavy operations
-import { WorkerPool } from '@lib/worker-pool.ts'
+import { WorkerPool } from '#lib/worker-pool.ts'
 
-const workerPool = new WorkerPool({
-  workerScript: './worker.ts',
-  maxWorkers: 4,
-})
+const workerPool = new WorkerPool(
+  new URL('./webp-worker.ts', import.meta.url).href,
+  4
+)
 
 const result = await workerPool.addTask({
   // options
@@ -348,4 +350,4 @@ if (process.argv.includes('--debug')) {
 
 When making changes, always run `pnpm test` before committing.
 
-> **Known baseline:** `pnpm type-check` (`tsc --noEmit`) currently exits non-zero with 7 pre-existing errors in files this migration did not change — `@__dirname/pixiv-web-api` ships incomplete type definitions, so `src/routes/pixiv/web-api.ts`, `src/services/pixiv/*`, `src/services/pximg.ts` and `src/services/worker/ugoira-worker.ts` fail to index its members. Treat those 7 as the accepted baseline; any *new* error is a real regression. No JS linter is configured, so `deno lint` is gone — match the style of neighbouring files.
+> **Known baseline:** `pnpm type-check` (`tsc --noEmit`) currently exits non-zero with 7 pre-existing errors in files this migration did not change — `@__dirname/pixiv-web-api` ships incomplete type definitions, so `src/routes/pixiv/web-api.ts`, `src/services/pixiv/*`, `src/services/pximg.ts` and `src/services/worker/ugoira-worker.ts` fail to index its members. Treat those 7 as the accepted baseline; any *new* error is a real regression. No JS linter is configured — match the style of neighbouring files.

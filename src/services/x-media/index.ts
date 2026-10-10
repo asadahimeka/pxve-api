@@ -12,7 +12,6 @@ const cursorRe = /^[A-Za-z0-9_\-=+/]{1,64}$/
  * Cookie 来源优先级：X_MEDIA_COOKIES（JSON 环境变量，PaaS 友好）→
  * X_MEDIA_COOKIES_FILE（自定义路径，如 docker secrets）→ 默认 cookies.json（每请求重读，热更新）。
  */
-// deno-lint-ignore require-await
 async function createXClient(): Promise<XClient> {
   const envJson = getEnv('X_MEDIA_COOKIES')
   if (envJson) {

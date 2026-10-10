@@ -42,9 +42,11 @@ test('illuminarty service - includes required headers', async () => {
   let capturedReferer = ''
 
   globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const headers = init?.headers as Record<string, string> | undefined
-    capturedOrigin = headers?.Origin || ''
-    capturedReferer = headers?.Referer || ''
+    // hono/proxy calls fetch(request): custom headers live on the Request
+    // object, init is undefined. Normalize both shapes before reading.
+    const req = input instanceof Request ? input : new Request(input, init)
+    capturedOrigin = req.headers.get('Origin') || ''
+    capturedReferer = req.headers.get('Referer') || ''
     return new Response('mock', { status: 200 })
   }
 

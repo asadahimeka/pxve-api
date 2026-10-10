@@ -70,7 +70,7 @@ test('proxy blocks ip echo service (httpbin.org)', async () => {
   app.route('/', proxyRoute)
   const r = await app.request('/proxy/https://httpbin.org/ip')
   assert.deepEqual(r.status, 400)
-  assert.deepEqual((await r.json()).error, 'blocked ip-echo domain: httpbin.org')
+  assert.deepEqual((await r.json()).error, 'blocked bad request')
 })
 
 test('proxy blocks ip echo subdomain (api.ipify.org)', async () => {
@@ -79,7 +79,7 @@ test('proxy blocks ip echo subdomain (api.ipify.org)', async () => {
   app.route('/', proxyRoute)
   const r = await app.request('/proxy/https://api.ipify.org?format=json')
   assert.deepEqual(r.status, 400)
-  assert.deepEqual((await r.json()).error, 'blocked ip-echo domain: api.ipify.org')
+  assert.deepEqual((await r.json()).error, 'blocked bad request')
 })
 
 test('proxy allows ip echo when PROXY_ALLOW_IP_ECHO=1', async () => {

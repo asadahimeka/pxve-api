@@ -1,4 +1,3 @@
-// deno-lint-ignore-file require-await
 import PixivApi from '#lib/pixiv-api.ts'
 
 const pixiv = new PixivApi()
