@@ -1,5 +1,6 @@
 // src/services/x-media/api.ts
 import { DEFAULT_UA, DOMAIN, getSharedTransaction, type XClientTransaction } from './transaction.ts'
+import { readFile } from '#lib/runtime.ts'
 
 export type { XClientTransaction }
 
@@ -181,7 +182,7 @@ export class XClient {
   }
 
   static async fromCookiesFile(path: string, opts: XClientOptions = {}): Promise<XClient> {
-    const cookies = JSON.parse(await Deno.readTextFile(path))
+    const cookies = JSON.parse(new TextDecoder().decode(await readFile(path)))
     if (!cookies.auth_token || !cookies.ct0) {
       throw new Error(
         'cookies.json is missing `auth_token` or `ct0` — re-export cookies from a logged-in x.com session',

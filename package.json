@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "node --env-file=.env --watch src/server.ts",
     "start": "node --env-file=.env src/server.ts",
+    "manage-cache": "node --env-file=.env scripts/cache-manage.ts",
     "type-check": "tsc --noEmit",
     "lint": "echo \"no JS linter configured yet\"",
     "test": "node --test tests/"

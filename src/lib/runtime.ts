@@ -26,6 +26,7 @@ const execFileAsync = promisify(execFile)
 interface NodeProcessLike {
   env?: Record<string, string | undefined>
   argv?: string[]
+  platform?: string
 }
 
 interface DenoLike {

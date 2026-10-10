@@ -46,7 +46,12 @@ function splitHeaders(res: Response): { headers: Array<[string, string]>; setCoo
 function buildResponse(meta: CacheEntryMeta, body: Uint8Array): Response {
   const headers = new Headers(meta.headers)
   for (const sc of meta.setCookie) headers.append('set-cookie', sc)
-  return new Response(body, { status: meta.status, headers })
+  // Copy out of any pooled backing store (fs.readFile may return a pooled
+  // view with non-zero byteOffset). Plain ArrayBuffer keeps both tsc and
+  // deno check happy (Uint8Array<ArrayBufferLike> is not BodyInit to tsc,
+  // Buffer is unknown to deno check).
+  const bytes = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer
+  return new Response(bytes, { status: meta.status, headers })
 }
 
 async function writeAtomic(path: string, data: Uint8Array | string): Promise<void> {
