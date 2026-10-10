@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from '@std/assert'
-import { assertSafeUrl } from '@lib/ssrf-guard.ts'
+import { assertSafeUrl } from '#lib/ssrf-guard.ts'
 
 Deno.test('block private ip', async () => {
   await assertRejects(() => assertSafeUrl('http://192.168.1.1/foo'))

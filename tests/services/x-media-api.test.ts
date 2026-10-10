@@ -10,7 +10,7 @@ import {
   X_TOKEN,
   XClient,
   XClientTransaction,
-} from '@services/x-media/api.ts'
+} from '#services/x-media/api.ts'
 
 /** Route-map fetch mock（同 transaction 测试）。 */
 function mockApi(routes: [string | RegExp, { status: number; body: unknown }][]) {

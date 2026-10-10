@@ -1,5 +1,5 @@
-import { MAX_DOWNLOAD_BYTES, UA_HEADER } from '@lib/const.ts'
-import { assertSafeUrl } from '@lib/ssrf-guard.ts'
+import { MAX_DOWNLOAD_BYTES, UA_HEADER } from '#lib/const.ts'
+import { assertSafeUrl } from '#lib/ssrf-guard.ts'
 import { webpWorkerPool } from './worker/index.ts'
 
 export async function convertWebP(url: string) {

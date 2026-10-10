@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { convertWebP } from '@services/webp.ts'
+import { convertWebP } from '#services/webp.ts'
 
 export const webpConvertRoute = new Hono().get(
   '/webp/*',

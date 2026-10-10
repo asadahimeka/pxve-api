@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { getSessionUserMeta, request } from '@services/pixiv/pixiv-now.ts'
+import { getSessionUserMeta, request } from '#services/pixiv/pixiv-now.ts'
 
 export const pixivNowRoute = new Hono()
 

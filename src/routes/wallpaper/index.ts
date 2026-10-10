@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { UA_HEADER } from '@lib/const.ts'
+import { UA_HEADER } from '#lib/const.ts'
 
 const CATEGORY_MAP: Record<string, string> = {
   girl: '4e4d610cdf714d2966000000',

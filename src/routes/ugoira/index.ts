@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { convertUgoira, ugoiraExtRegex, ugoiraExts } from '@services/ugoira.ts'
+import { convertUgoira, ugoiraExtRegex, ugoiraExts } from '#services/ugoira.ts'
 
 export const ugoiraRoute = new Hono().get(
   '/ugoira/:id',

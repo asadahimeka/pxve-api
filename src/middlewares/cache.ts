@@ -1,6 +1,6 @@
 import type { Context, MiddlewareHandler } from 'hono'
 import type { StatusCode } from 'hono/utils/http-status'
-import { sanitizeUrl } from '@lib/sanitize.ts'
+import { sanitizeUrl } from '#lib/sanitize.ts'
 
 /**
  * status codes that can be cached by default.

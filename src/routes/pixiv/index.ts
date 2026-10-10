@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { callPixivAction, pixivActionKeys, withPixivRefresh } from '@services/pixiv/action.ts'
+import { callPixivAction, pixivActionKeys, withPixivRefresh } from '#services/pixiv/action.ts'
 
 export const pixivApiRoute = new Hono()
 

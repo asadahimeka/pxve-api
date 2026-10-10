@@ -1,5 +1,5 @@
 import { proxy } from 'hono/proxy'
-import { PIXIV_API_HEADERS } from '@lib/const.ts'
+import { PIXIV_API_HEADERS } from '#lib/const.ts'
 
 export async function pixivApiProxy(reqUrl: string, req: Request) {
   const url = new URL(reqUrl)

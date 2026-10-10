@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { recoverPidImage } from '@services/pixiv/pid-recover.ts'
+import { recoverPidImage } from '#services/pixiv/pid-recover.ts'
 
 export const pidRecoverRoute = new Hono().get(
   '/pid-recover/:id',

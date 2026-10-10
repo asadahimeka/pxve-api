@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { fetchPixivisionDetail, fetchPixivisionDetailContent, fetchPixivisionList } from '@services/pixivision.ts'
+import { fetchPixivisionDetail, fetchPixivisionDetailContent, fetchPixivisionList } from '#services/pixivision.ts'
 
 export const pixivisionRoute = new Hono()
 

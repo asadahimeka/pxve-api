@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { pixivWebApi } from '@services/pixiv/web-api.ts'
+import { pixivWebApi } from '#services/pixiv/web-api.ts'
 
 const allowedFuncs = [
   'discovery',

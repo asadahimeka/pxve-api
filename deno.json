@@ -10,6 +10,10 @@
   "imports": {
     "@lib/": "./src/lib/",
     "@services/": "./src/services/",
+    "#lib/": "./src/lib/",
+    "#services/": "./src/services/",
+    "@hono/node-server": "npm:@hono/node-server@^2.1.4",
+    "@hono/node-server/": "npm:/@hono/node-server@^2.1.4/",
     "@std/assert": "jsr:@std/assert@^1.0.18",
     "@std/fs": "jsr:@std/fs@^1.0.21",
     "@std/path": "jsr:@std/path@^1.1.4",

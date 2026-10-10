@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { commonProxy } from '@services/proxy.ts'
+import { commonProxy } from '#services/proxy.ts'
 
 export const proxyRoute = new Hono().on(
   ['GET', 'POST'],

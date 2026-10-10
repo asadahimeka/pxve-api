@@ -1,6 +1,6 @@
 const DEDUPER_MAX = Number(Deno.env.get('DEDUPER_MAX') ?? 1000)
 
-import { sanitizeError, sanitizeUrl } from '@lib/sanitize.ts'
+import { sanitizeError, sanitizeUrl } from '#lib/sanitize.ts'
 
 export class RequestDeduper {
   map: Map<string, Promise<Response>>

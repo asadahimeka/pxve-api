@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { illuminartyImageAnalysis } from '@services/illuminarty.ts'
+import { illuminartyImageAnalysis } from '#services/illuminarty.ts'
 
 export const aiImageDetectRoute = new Hono().get(
   '/ai-image-detect',

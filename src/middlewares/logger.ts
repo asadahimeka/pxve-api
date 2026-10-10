@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from 'hono'
-import { sanitizeUrl } from '@lib/sanitize.ts'
+import { sanitizeUrl } from '#lib/sanitize.ts'
 
 export function logger(): MiddlewareHandler {
   return async (ctx, next) => {

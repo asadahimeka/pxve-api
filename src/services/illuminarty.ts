@@ -1,6 +1,6 @@
 import { proxy } from 'hono/proxy'
-import { MAX_DOWNLOAD_BYTES, UA_HEADER } from '@lib/const.ts'
-import { assertSafeUrl } from '@lib/ssrf-guard.ts'
+import { MAX_DOWNLOAD_BYTES, UA_HEADER } from '#lib/const.ts'
+import { assertSafeUrl } from '#lib/ssrf-guard.ts'
 
 export async function illuminartyImageAnalysis(url: string) {
   await assertSafeUrl(url)

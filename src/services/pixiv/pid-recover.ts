@@ -1,4 +1,4 @@
-import { UA_HEADER } from '@lib/const.ts'
+import { UA_HEADER } from '#lib/const.ts'
 
 export async function recoverPidImage(id: string) {
   let body: string | null = null

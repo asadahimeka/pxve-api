@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono'
 import { isbot } from 'isbot'
-import { GET_ACCEPT_DOMAINS, UA_BLACKLIST } from '@lib/const.ts'
+import { GET_ACCEPT_DOMAINS, UA_BLACKLIST } from '#lib/const.ts'
 
 // Warn once at module load time if ACCEPT_DOMAINS is empty
 if (!GET_ACCEPT_DOMAINS().length) {

@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from 'hono'
 import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
-import { GET_API_TOKEN } from '@lib/const.ts'
+import { GET_API_TOKEN } from '#lib/const.ts'
 
 const EXACT_WHITELIST = ['/docs', '/swagger', '/openapi.json', '/openapi-hibiapi.json', '/robots.txt', '/favicon.ico']
 const PREFIX_WHITELIST = ['/docs', '/swagger']

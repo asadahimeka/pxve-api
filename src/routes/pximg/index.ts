@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { fetchPximg, fetchPximgByPidPath } from '@services/pximg.ts'
+import { fetchPximg, fetchPximgByPidPath } from '#services/pximg.ts'
 
 export const pximgRoute = new Hono()
 

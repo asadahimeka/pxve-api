@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { pixivApiProxy } from '@services/pixiv/api-proxy.ts'
+import { pixivApiProxy } from '#services/pixiv/api-proxy.ts'
 
 export const pixivApiProxyRoute = new Hono().on(
   ['GET', 'POST'],

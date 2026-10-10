@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { runFetchXMediaCmd } from '@services/x-media/index.ts'
+import { runFetchXMediaCmd } from '#services/x-media/index.ts'
 
 export const xMediaRoute = new Hono().get(
   '/x/media',

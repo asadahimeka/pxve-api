@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { saucenaoSearch } from '@services/saucenao.ts'
+import { saucenaoSearch } from '#services/saucenao.ts'
 
 const SauceNAOResponseSchema = z.object({
   header: z.object(),

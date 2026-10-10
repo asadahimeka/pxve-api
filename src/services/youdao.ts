@@ -1,5 +1,5 @@
 import CryptoJS from 'crypto-js'
-import { UA_HEADER } from '@lib/const.ts'
+import { UA_HEADER } from '#lib/const.ts'
 
 const SECRET_KEY = 'SRz6r3IGA6lj9i5zW0OYqgVZOtLDQe3E'
 const AES_KEY = 'ydsecret://query/key/B*RGygVywfNBwpmBaZg*WT7SIOUP2T0C9WHMZN39j^DAdaZhAnxvGcCY6VYFwnHl'

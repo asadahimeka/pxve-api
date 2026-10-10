@@ -14,7 +14,7 @@ import {
   parseKeyByteIndices,
   roundHalfEven,
   XClientTransaction,
-} from '@services/x-media/transaction.ts'
+} from '#services/x-media/transaction.ts'
 
 interface GoldenVector {
   key: string

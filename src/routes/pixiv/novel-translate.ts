@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-import { translatePixivNovel } from '@services/pixiv/translate.ts'
+import { translatePixivNovel } from '#services/pixiv/translate.ts'
 
 export const pixivTranslateNovelRoute = new Hono().get(
   '/pixiv-novel-translate/:id',

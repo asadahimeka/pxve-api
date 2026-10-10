@@ -1,6 +1,6 @@
 // tests/services/x-media-index.test.ts
 import { assertRejects } from '@std/assert'
-import { runFetchXMediaCmd } from '@services/x-media/index.ts'
+import { runFetchXMediaCmd } from '#services/x-media/index.ts'
 
 // 仅覆盖 cookie 来源解析的错误分支（不触网）；有效 JSON 的成功路径由 live A/B 覆盖。
 

@@ -3,9 +3,16 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable", "WebWorker"],
     "allowJs": true,
     "strict": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "esnext",
+    "skipLibCheck": true,
+    "types": ["node"],
     "paths": {
-      "@lib/*": ["./src/lib/*"],
-      "@services/*": ["./src/services/*"]
+      "#lib/*": ["./src/lib/*"],
+      "#services/*": ["./src/services/*"]
     }
   },
   "include": ["src/**/*.ts"],

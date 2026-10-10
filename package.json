@@ -1,0 +1,48 @@
+{
+  "name": "pxve-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.10.0"
+  },
+  "imports": {
+    "#lib/*": "./src/lib/*",
+    "#services/*": "./src/services/*"
+  },
+  "scripts": {
+    "dev": "node --env-file=.env --watch src/server.ts",
+    "start": "node --env-file=.env src/server.ts",
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"no JS linter configured yet\"",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "@__dirname/pixiv-web-api": "0.1.4",
+    "@hono/node-server": "^2.1.4",
+    "@hono/swagger-ui": "^0.5.3",
+    "@scalar/hono-api-reference": "^0.9.34",
+    "await-lock": "2.2.2",
+    "bing-translate-api": "^4.2.1",
+    "cheerio": "1.1.2",
+    "cookie": "1.1.1",
+    "crypto-js": "4.2.0",
+    "dayjs": "1.11.19",
+    "google-translate-api-x": "^10.7.3",
+    "hono": "^4.13.5",
+    "hono-zod-openapi": "^1.0.1",
+    "isbot": "^5.2.1",
+    "qrcode": "^1.5.3",
+    "qs": "^6.15.3",
+    "sharp": "^0.35.5",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^24.0.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/qs": "^6.9.18",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2"
+  }
+}

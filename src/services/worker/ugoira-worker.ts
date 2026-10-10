@@ -1,7 +1,7 @@
 import { join } from '@std/path'
 import { ensureDir } from '@std/fs'
-import { UA_HEADER } from '@lib/const.ts'
-import { assertSafeUrl } from '@lib/ssrf-guard.ts'
+import { UA_HEADER } from '#lib/const.ts'
+import { assertSafeUrl } from '#lib/ssrf-guard.ts'
 import { pixivWebApi } from '../pixiv/web-api.ts'
 
 export const UGOIRA_MAX_ZIP_BYTES = Number(Deno.env.get('UGOIRA_MAX_ZIP_BYTES') ?? 52428800)
