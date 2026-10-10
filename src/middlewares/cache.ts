@@ -1,6 +1,10 @@
 import type { Context, MiddlewareHandler } from 'hono'
 import type { StatusCode } from 'hono/utils/http-status'
+import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { sanitizeUrl } from '#lib/sanitize.ts'
+import { createHttpCacheStore, type HttpCacheStore } from '#lib/http-cache-store.ts'
+import { getEnv } from '#lib/runtime.ts'
 
 /**
  * status codes that can be cached by default.
@@ -28,16 +32,6 @@ const shouldSkipCache = (res: Response) => {
 }
 
 /**
- * Cache metadata for tracking expiration and access times
- */
-interface CacheMetadata {
-  createdAt: number
-  lastAccessedAt: number
-  expiresAt: number | null
-  key: string
-}
-
-/**
  * Parse max-age from Cache-Control header
  */
 const parseMaxAge = (cacheControl: string | undefined): number | null => {
@@ -46,125 +40,41 @@ const parseMaxAge = (cacheControl: string | undefined): number | null => {
   return match ? parseInt(match[1], 10) * 1000 : null
 }
 
-/**
- * Get metadata cache key for a given cache key
- */
-const getMetadataKey = (key: string): string => {
-  return `${key}&__metadata__`
-}
-
-const cacheKeysKey = 'http://__metadata__.cache.keys'
 const SENSITIVE_URL_PARAM_RE =
   /[?&](?:api[_-]?key|access[_-]?token|auth[_-]?token|token|PHPSESSID|ct0|secret|password)=/i
-const getMetadataCacheKeys = (keys: string[] | null) => keys?.map(getMetadataKey) || []
-const getCacheKeys = async (metadataCache: Cache) => {
-  const match = await metadataCache.match(cacheKeysKey)
-  if (!match) return null
-  const keys = (await match.json()) as string[]
-  return [...new Set(keys)]
-}
-const setCacheKey = async (metadataCache: Cache, key: string, { isDelete = false } = {}) => {
-  let keys = await getCacheKeys(metadataCache)
-  if (!keys) keys = []
-  if (isDelete) {
-    keys = keys.filter(e => e != key)
-  } else {
-    keys.push(key)
-  }
-  await metadataCache.put(
-    cacheKeysKey,
-    new Response(JSON.stringify(keys), {
-      headers: { 'Content-Type': 'application/json' },
-    })
-  )
-}
 
 /**
- * Clean expired entries from cache
+ * Resolve the on-disk cache root. CACHE_DIR absolute → as-is; relative →
+ * anchored to the repo root (never process.cwd()).
  */
-const cleanExpiredEntries = async (cache: Cache, metadataCache: Cache, now: number = Date.now()): Promise<void> => {
-  console.log('[cache-middleware]: clean expired entries')
-  try {
-    const metadataKeys = getMetadataCacheKeys(await getCacheKeys(metadataCache))
-    const expiredKeys: string[] = []
-    for (const request of metadataKeys) {
-      const metadataResponse = await metadataCache.match(request)
-      if (!metadataResponse) continue
-      const metadata = (await metadataResponse.json()) as CacheMetadata
-
-      // Check if expired
-      if (metadata.expiresAt && metadata.expiresAt < now) {
-        expiredKeys.push(metadata.key)
-      }
-    }
-    // Delete expired entries from both caches
-    await Promise.all(
-      expiredKeys.map(async key => {
-        const metadataKey = getMetadataKey(key)
-        await cache.delete(key)
-        await metadataCache.delete(metadataKey)
-        await setCacheKey(metadataCache, key, { isDelete: true })
-      })
-    )
-  } catch (error) {
-    console.error('Error cleaning expired cache entries:', error)
-  }
+function resolveCacheBaseDir(): string {
+  const configured = getEnv('CACHE_DIR') ?? './.cache/http'
+  if (configured.startsWith('/')) return configured
+  return join(fileURLToPath(new URL('../../', import.meta.url)), configured)
 }
 
-/**
- * Enforce cache size limit by removing least recently used entries
- */
-const enforceCacheSizeLimit = async (
-  cache: Cache,
-  metadataCache: Cache,
-  maxSizeBytes: number | undefined,
-  maxEntries: number | undefined
-): Promise<void> => {
-  if (!maxSizeBytes && !maxEntries) return
-  console.log('[cache-middleware]: enforce cache size limit (LRU)')
-  try {
-    const metadataKeys = getMetadataCacheKeys(await getCacheKeys(metadataCache))
-    if (metadataKeys.length === 0) return
-    // Collect all metadata with sizes
-    const entries: Array<{ metadata: CacheMetadata; size: number }> = []
-    for (const request of metadataKeys) {
-      const metadataResponse = await metadataCache.match(request)
-      if (!metadataResponse) continue
-      const metadata = (await metadataResponse.json()) as CacheMetadata
-      const cachedResponse = await cache.match(metadata.key)
+function sanitizeCacheName(cacheName: string): string {
+  return cacheName.replace(/[^a-zA-Z0-9._-]/g, '_') || 'default'
+}
 
-      if (cachedResponse) {
-        // Estimate response size (note: exact size may vary by runtime)
-        const clonedResponse = cachedResponse.clone()
-        const blob = await clonedResponse.blob()
-        const size = blob.size
-        entries.push({ metadata, size })
-      }
-    }
-    // Sort by lastAccessedAt (oldest first - LRU)
-    entries.sort((a, b) => a.metadata.lastAccessedAt - b.metadata.lastAccessedAt)
-    // Determine entries to delete based on both maxEntries and maxSizeBytes
-    let totalSize = entries.reduce((sum, entry) => sum + entry.size, 0)
-    const entriesToDelete: string[] = []
-    for (const entry of entries) {
-      const exceedsEntries = maxEntries !== undefined && entries.length - entriesToDelete.length > maxEntries
-      const exceedsSize = maxSizeBytes !== undefined && totalSize > maxSizeBytes
-      if (!exceedsEntries && !exceedsSize) break
-      totalSize -= entry.size
-      entriesToDelete.push(entry.metadata.key)
-    }
-    // Batch delete all excess entries at once
-    await Promise.all(
-      entriesToDelete.map(async key => {
-        const metadataKey = getMetadataKey(key)
-        await cache.delete(key)
-        await metadataCache.delete(metadataKey)
-        await setCacheKey(metadataCache, key, { isDelete: true })
-      })
-    )
-  } catch (error) {
-    console.error('Error enforcing cache size limit:', error)
-  }
+// Store handles only (dir + limits). No entry data lives in memory:
+// every match/put/stats reads disk. First creator wins on limits.
+const stores = new Map<string, HttpCacheStore>()
+
+function getStore(
+  cacheName: string,
+  opts?: { maxEntries?: number; maxSizeBytes?: number; defaultMaxAgeMs?: number }
+): HttpCacheStore {
+  const existing = stores.get(cacheName)
+  if (existing) return existing
+  const store = createHttpCacheStore({
+    dir: join(resolveCacheBaseDir(), sanitizeCacheName(cacheName)),
+    maxEntries: opts?.maxEntries ?? 5000,
+    maxSizeBytes: opts?.maxSizeBytes,
+    defaultMaxAgeMs: opts?.defaultMaxAgeMs,
+  })
+  stores.set(cacheName, store)
+  return store
 }
 
 /**
@@ -172,27 +82,15 @@ const enforceCacheSizeLimit = async (
  */
 const startBackgroundCleanup = (
   cacheName: string,
+  store: HttpCacheStore,
   options: {
-    maxAge?: number
-    maxSizeBytes?: number
-    maxEntries?: number
     cleanupInterval?: number
   }
 ): (() => void) => {
-  const { maxAge, maxSizeBytes, maxEntries, cleanupInterval = 5 * 60 * 1000 } = options
-  if (!maxAge && !maxSizeBytes && !maxEntries) {
-    return () => {} // No cleanup needed
-  }
+  const { cleanupInterval = 5 * 60 * 1000 } = options
   const timerId = setInterval(async () => {
     try {
-      const cache = await caches.open(cacheName)
-      const metadataCache = await caches.open(`${cacheName}:metadata`)
-      if (maxAge) {
-        await cleanExpiredEntries(cache, metadataCache)
-      }
-      if (maxSizeBytes || maxEntries) {
-        await enforceCacheSizeLimit(cache, metadataCache, maxSizeBytes, maxEntries)
-      }
+      await store.cleanup()
     } catch (error) {
       console.error('Error in background cleanup:', error)
     }
@@ -226,21 +124,6 @@ const startBackgroundCleanup = (
  *   cache({
  *     cacheName: 'my-app',
  *     cacheControl: 'max-age=3600',
- *     maxAge: 3600000, // 1 hour
- *     maxSizeBytes: 50 * 1024 * 1024, // 50MB
- *     cleanupInterval: 600000, // 10 minutes
- *   })
- * )
- * ```
- *
- * @example
- * Force update a specific route:
- * ```ts
- * app.get(
- *   '/api/data',
- *   cache({
- *     cacheName: 'api-cache',
- *     cacheControl: 'max-age=3600',
  *   }),
  *   async (c) => {
  *     // Force update if ?refresh=true is present
@@ -264,11 +147,6 @@ export const cache = (options: {
   cleanupInterval?: number
   shouldBypassCache?: (c: Context) => boolean | Promise<boolean>
 }): MiddlewareHandler => {
-  if (!globalThis.caches) {
-    console.log('Cache Middleware is not enabled because caches is not defined.')
-    return async (_c, next) => await next()
-  }
-
   const { maxAge, maxSizeBytes, maxEntries, cleanupInterval = 5 * 60 * 1000 } = options
 
   const cacheControlDirectives = options.cacheControl?.split(',').map(directive => directive.toLowerCase())
@@ -332,16 +210,11 @@ export const cache = (options: {
     key = `${key}&auth=${hasAuth ? '1' : '0'}`
 
     const cacheName = typeof options.cacheName === 'function' ? await options.cacheName(c) : options.cacheName
-    const cache = await caches.open(cacheName)
-    const metadataCache = await caches.open(`${cacheName}:metadata`)
-    const metadataKey = getMetadataKey(key)
+    const store = getStore(cacheName, { maxEntries, maxSizeBytes, defaultMaxAgeMs: maxAge })
 
     // Start cleanup timer for this cache name if not already started
     if ((maxAge || maxSizeBytes || maxEntries) && !cleanupTimers.has(cacheName)) {
-      const stopTimer = startBackgroundCleanup(cacheName, {
-        maxAge,
-        maxSizeBytes,
-        maxEntries,
+      const stopTimer = startBackgroundCleanup(cacheName, store, {
         cleanupInterval,
       })
       cleanupTimers.set(cacheName, stopTimer)
@@ -362,44 +235,18 @@ export const cache = (options: {
     }
 
     const now = Date.now()
-    const response = await cache.match(key)
-    let cachedMetadata: CacheMetadata | null = null
-    if (response) {
-      // Get metadata
-      const metadataResponse = await metadataCache.match(metadataKey)
-      if (metadataResponse) {
-        cachedMetadata = (await metadataResponse.json()) as CacheMetadata
-      }
+    const cached = await store.match(key)
 
-      // Check if cache is expired
-      let isExpired = false
-      if (cachedMetadata?.expiresAt && cachedMetadata.expiresAt < now) {
-        isExpired = true
-      }
+    // Return cached response if not expired or not forcing update.
+    // (store.match returns null for expired entries and cleans them.)
+    if (cached && !shouldBypass) {
+      c.header('X-Cache', 'HIT')
+      return cached
+    }
 
-      // Return cached response if not expired or not forcing update
-      if (!isExpired && !shouldBypass) {
-        c.header('X-Cache', 'HIT')
-
-        // Update metadata access time
-        if (cachedMetadata) {
-          cachedMetadata.lastAccessedAt = now
-          await metadataCache.put(
-            metadataKey,
-            new Response(JSON.stringify(cachedMetadata), {
-              headers: { 'Content-Type': 'application/json' },
-            })
-          )
-        }
-        return new Response(response.body, response)
-      }
-
-      // Delete expired or bypassed entry
-      if (isExpired || shouldBypass) {
-        await cache.delete(key)
-        await metadataCache.delete(metadataKey)
-        await setCacheKey(metadataCache, key, { isDelete: true })
-      }
+    // Delete expired or bypassed entry
+    if (cached) {
+      await store.delete(key)
     }
 
     // Fetch fresh response
@@ -417,40 +264,16 @@ export const cache = (options: {
       return
     }
 
-    c.header('X-Cache', shouldBypass ? 'BYPASS' : response ? 'EXPIRED' : 'MISS')
+    // NOTE: expired-then-refreshed reports MISS (was EXPIRED on Cache API).
+    // No in-repo consumer distinguishes them; saves a disk read per miss.
+    c.header('X-Cache', shouldBypass ? 'BYPASS' : 'MISS')
 
     const res = c.res.clone()
 
-    // Calculate expiration
-    let expiresAt: number | null = null
+    // Expiration: response header wins, else the maxAge option (as store default).
     const headerMaxAge = parseMaxAge(c.res.headers.get('Cache-Control') || undefined)
-    if (headerMaxAge) {
-      expiresAt = now + headerMaxAge
-    } else if (maxAge) {
-      expiresAt = now + maxAge
-    }
 
-    // Enforce size and entry limits before storing
-    if (maxSizeBytes || maxEntries) {
-      await enforceCacheSizeLimit(cache, metadataCache, maxSizeBytes, maxEntries)
-    }
-
-    // Store metadata
-    const metadata: CacheMetadata = {
-      createdAt: now,
-      lastAccessedAt: now,
-      expiresAt,
-      key,
-    }
-
-    await cache.put(key, res)
-    await metadataCache.put(
-      metadataKey,
-      new Response(JSON.stringify(metadata), {
-        headers: { 'Content-Type': 'application/json' },
-      })
-    )
-    await setCacheKey(metadataCache, key)
+    await store.put(key, res, headerMaxAge ?? undefined)
   }
 }
 
@@ -460,8 +283,7 @@ export const cache = (options: {
 export const clearCache = async (cacheName: string): Promise<void> => {
   console.log(`[cache-middleware]: clear cache "${cacheName}" `)
   try {
-    await caches.delete(cacheName)
-    await caches.delete(`${cacheName}:metadata`)
+    await getStore(cacheName).clear()
   } catch (error) {
     console.error(`Error clearing cache ${cacheName}:`, error)
     throw error
@@ -474,17 +296,7 @@ export const clearCache = async (cacheName: string): Promise<void> => {
 export const deleteCacheEntry = async (cacheName: string, key: string): Promise<boolean> => {
   console.log(`[cache-middleware]: delete cache entry "${key}" of "${cacheName}" `)
   try {
-    const cache = await caches.open(cacheName)
-    const metadataCache = await caches.open(`${cacheName}:metadata`)
-
-    const metadataKey = getMetadataKey(key)
-    const [deletedFromCache, deletedFromMetadata] = await Promise.all([
-      cache.delete(key),
-      metadataCache.delete(metadataKey),
-      setCacheKey(metadataCache, key, { isDelete: true }),
-    ])
-
-    return deletedFromCache || deletedFromMetadata
+    return await getStore(cacheName).delete(key)
   } catch (error) {
     console.error(`Error deleting cache entry ${key}:`, error)
     return false
@@ -503,50 +315,20 @@ export const getCacheStats = async (
   entries: Array<{ key: string; createdAt: number; lastAccessedAt: number; expiresAt: number | null; size: number }>
 }> => {
   try {
-    const cache = await caches.open(cacheName)
-    const metadataCache = await caches.open(`${cacheName}:metadata`)
-    const entries: Array<{
-      key: string
-      createdAt: number
-      lastAccessedAt: number
-      expiresAt: number | null
-      size: number
-    }> = []
-    const metadataKeys = getMetadataCacheKeys(await getCacheKeys(metadataCache))
-    console.log('metadataKeys: ', metadataKeys)
-    const now = Date.now()
-    let expiredCount = 0
-    let totalSize = 0
-    for (const request of metadataKeys) {
-      const metadataResponse = await metadataCache.match(request)
-      if (!metadataResponse) continue
-      const metadata = (await metadataResponse.json()) as CacheMetadata
-      console.log('metadata: ', metadata)
-      const cachedResponse = await cache.match(metadata.key)
-
-      if (cachedResponse) {
-        const clonedResponse = cachedResponse.clone()
-        const blob = await clonedResponse.blob()
-        const size = blob.size
-        console.log('size: ', size)
-        totalSize += size
-        if (metadata.expiresAt && metadata.expiresAt < now) {
-          expiredCount++
-        }
-        entries.push({
-          key: metadata.key,
-          createdAt: metadata.createdAt,
-          lastAccessedAt: metadata.lastAccessedAt,
-          expiresAt: metadata.expiresAt,
-          size,
-        })
-      }
-    }
+    const stats = await getStore(cacheName).stats()
     return {
-      count: entries.length,
-      totalSize,
-      expiredCount,
-      entries: entries.sort((a, b) => b.lastAccessedAt - a.lastAccessedAt),
+      count: stats.entries,
+      totalSize: stats.bytes,
+      expiredCount: stats.expiredCount,
+      entries: stats.items
+        .map(m => ({
+          key: m.key,
+          createdAt: m.createdAt,
+          lastAccessedAt: m.lastAccessedAt,
+          expiresAt: m.expiresAt,
+          size: m.size,
+        }))
+        .sort((a, b) => b.lastAccessedAt - a.lastAccessedAt),
     }
   } catch (error) {
     console.error(`Error getting cache stats for ${cacheName}:`, error)
@@ -569,32 +351,12 @@ export const revalidateCacheEntry = async (
     if (!response.ok) {
       throw new Error(`Fetch failed with status ${response.status}`)
     }
-    const cache = await caches.open(cacheName)
-    const metadataCache = await caches.open(`${cacheName}:metadata`)
 
-    const now = Date.now()
-    // Calculate expiration
-    let expiresAt: number | null = null
+    // Calculate expiration (response header only, same as before)
     const headerMaxAge = parseMaxAge(response.headers.get('Cache-Control') || undefined)
-    if (headerMaxAge) {
-      expiresAt = now + headerMaxAge
-    }
-    // Store response and metadata
-    await cache.put(key, response.clone())
 
-    const metadata: CacheMetadata = {
-      createdAt: now,
-      lastAccessedAt: now,
-      expiresAt,
-      key,
-    }
-
-    await metadataCache.put(
-      getMetadataKey(key),
-      new Response(JSON.stringify(metadata), {
-        headers: { 'Content-Type': 'application/json' },
-      })
-    )
+    // Store response (store enforces its default limits after put)
+    await getStore(cacheName).put(key, response.clone(), headerMaxAge ?? undefined)
     return response
   } catch (error) {
     console.error(`Error revalidating cache entry ${key}:`, error)
