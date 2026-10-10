@@ -1,7 +1,8 @@
-import { assertEquals, assertRejects } from '@std/assert'
 import { illuminartyImageAnalysis } from '../../src/services/illuminarty.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('illuminarty service - calls correct API endpoint', async () => {
+test('illuminarty service - calls correct API endpoint', async () => {
   const originalFetch = globalThis.fetch
   let capturedUrl = ''
 
@@ -12,13 +13,13 @@ Deno.test('illuminarty service - calls correct API endpoint', async () => {
 
   try {
     await illuminartyImageAnalysis('https://example.com/image.jpg')
-    assertEquals(capturedUrl, 'https://app.illuminarty.ai/api/analysis/image')
+    assert.deepEqual(capturedUrl, 'https://app.illuminarty.ai/api/analysis/image')
   } finally {
     globalThis.fetch = originalFetch
   }
 })
 
-Deno.test('illuminarty service - sends form data with file', async () => {
+test('illuminarty service - sends form data with file', async () => {
   const originalFetch = globalThis.fetch
   let capturedBody: string | null = null
 
@@ -29,13 +30,13 @@ Deno.test('illuminarty service - sends form data with file', async () => {
 
   try {
     await illuminartyImageAnalysis('https://example.com/image.jpg')
-    assertEquals(capturedBody !== null, true)
+    assert.deepEqual(capturedBody !== null, true)
   } finally {
     globalThis.fetch = originalFetch
   }
 })
 
-Deno.test('illuminarty service - includes required headers', async () => {
+test('illuminarty service - includes required headers', async () => {
   const originalFetch = globalThis.fetch
   let capturedOrigin = ''
   let capturedReferer = ''
@@ -49,8 +50,8 @@ Deno.test('illuminarty service - includes required headers', async () => {
 
   try {
     await illuminartyImageAnalysis('https://example.com/image.jpg')
-    assertEquals(capturedOrigin, 'https://app.illuminarty.ai')
-    assertEquals(capturedReferer, 'https://app.illuminarty.ai/')
+    assert.deepEqual(capturedOrigin, 'https://app.illuminarty.ai')
+    assert.deepEqual(capturedReferer, 'https://app.illuminarty.ai/')
   } finally {
     globalThis.fetch = originalFetch
   }

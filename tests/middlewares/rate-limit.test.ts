@@ -1,13 +1,14 @@
 import { Hono } from 'hono'
-import { assertEquals } from '@std/assert'
 import { rateLimit } from '../../src/middlewares/rate-limit.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('rate limit 429', async () => {
+test('rate limit 429', async () => {
   const app = new Hono()
   app.use(rateLimit({ windowMs: 60000, max: 2 }))
   app.get('/', c => c.text('ok'))
   await (await app.request('/')).text()
   await (await app.request('/')).text()
   const r3 = await app.request('/')
-  assertEquals(r3.status, 429)
+  assert.deepEqual(r3.status, 429)
 })

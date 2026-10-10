@@ -1,15 +1,15 @@
-import { assertEquals, assertRejects } from '@std/assert'
 import { pixivApiProxy } from '../../../src/services/pixiv/api-proxy.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('pixiv-api-proxy - throws on unknown path', async () => {
-  await assertRejects(
+test('pixiv-api-proxy - throws on unknown path', async () => {
+  await assert.rejects(
     () => pixivApiProxy('https://example.com/unknown/path', new Request('https://example.com/')),
-    Error,
-    'Not found'
+    (e: unknown) => e instanceof Error && e.message.includes('Not found')
   )
 })
 
-Deno.test('pixiv-api-proxy - routes /pixiv-app-api to app-api.pixiv.net', async () => {
+test('pixiv-api-proxy - routes /pixiv-app-api to app-api.pixiv.net', async () => {
   const originalFetch = globalThis.fetch
   let capturedUrl = ''
 
@@ -20,14 +20,14 @@ Deno.test('pixiv-api-proxy - routes /pixiv-app-api to app-api.pixiv.net', async 
 
   try {
     await pixivApiProxy('https://example.com/pixiv-app-api/v1/user/me', new Request('https://example.com/'))
-    assertEquals(capturedUrl.includes('app-api.pixiv.net'), true)
-    assertEquals(capturedUrl.includes('/v1/user/me'), true)
+    assert.deepEqual(capturedUrl.includes('app-api.pixiv.net'), true)
+    assert.deepEqual(capturedUrl.includes('/v1/user/me'), true)
   } finally {
     globalThis.fetch = originalFetch
   }
 })
 
-Deno.test('pixiv-api-proxy - routes /pixiv-oauth to oauth.secure.pixiv.net', async () => {
+test('pixiv-api-proxy - routes /pixiv-oauth to oauth.secure.pixiv.net', async () => {
   const originalFetch = globalThis.fetch
   let capturedUrl = ''
 
@@ -38,14 +38,14 @@ Deno.test('pixiv-api-proxy - routes /pixiv-oauth to oauth.secure.pixiv.net', asy
 
   try {
     await pixivApiProxy('https://example.com/pixiv-oauth/token', new Request('https://example.com/'))
-    assertEquals(capturedUrl.includes('oauth.secure.pixiv.net'), true)
-    assertEquals(capturedUrl.includes('/token'), true)
+    assert.deepEqual(capturedUrl.includes('oauth.secure.pixiv.net'), true)
+    assert.deepEqual(capturedUrl.includes('/token'), true)
   } finally {
     globalThis.fetch = originalFetch
   }
 })
 
-Deno.test('pixiv-api-proxy - forwards auth headers', async () => {
+test('pixiv-api-proxy - forwards auth headers', async () => {
   const originalFetch = globalThis.fetch
   let capturedHeaders: Record<string, string> = {}
 
@@ -63,9 +63,9 @@ Deno.test('pixiv-api-proxy - forwards auth headers', async () => {
       },
     })
     await pixivApiProxy('https://example.com/pixiv-app-api/v1/user/me', req)
-    assertEquals(capturedHeaders['Authorization'], 'Bearer test-token')
-    assertEquals(capturedHeaders['X-Client-Time'], '2024-01-01T00:00:00Z')
-    assertEquals(capturedHeaders['X-Client-Hash'], 'abc123')
+    assert.deepEqual(capturedHeaders['Authorization'], 'Bearer test-token')
+    assert.deepEqual(capturedHeaders['X-Client-Time'], '2024-01-01T00:00:00Z')
+    assert.deepEqual(capturedHeaders['X-Client-Hash'], 'abc123')
   } finally {
     globalThis.fetch = originalFetch
   }

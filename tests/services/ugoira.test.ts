@@ -1,97 +1,102 @@
-import { assertEquals, assertRejects } from '@std/assert'
 import { convertUgoira, ugoiraExtRegex, ugoiraExts } from '../../src/services/ugoira.ts'
 import { isSafeZipEntry } from '../../src/services/worker/ugoira-worker.ts'
-import { join } from '@std/path'
+import { join } from 'node:path'
+import {
+  ensureDirRecursive,
+  makeTempDir,
+  platformIsWindows,
+  removeRecursive,
+  runCmd,
+  writeFile,
+} from '../../src/lib/runtime.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('ugoiraExtRegex validates correct formats', () => {
+test('ugoiraExtRegex validates correct formats', () => {
   // Valid formats
-  assertEquals(ugoiraExtRegex.test('123456.mp4'), true)
-  assertEquals(ugoiraExtRegex.test('123456.gif'), true)
-  assertEquals(ugoiraExtRegex.test('123456.webp'), true)
-  assertEquals(ugoiraExtRegex.test('123456.webm'), true)
-  assertEquals(ugoiraExtRegex.test('123456.avif'), true)
-  assertEquals(ugoiraExtRegex.test('123456.apng'), true)
+  assert.deepEqual(ugoiraExtRegex.test('123456.mp4'), true)
+  assert.deepEqual(ugoiraExtRegex.test('123456.gif'), true)
+  assert.deepEqual(ugoiraExtRegex.test('123456.webp'), true)
+  assert.deepEqual(ugoiraExtRegex.test('123456.webm'), true)
+  assert.deepEqual(ugoiraExtRegex.test('123456.avif'), true)
+  assert.deepEqual(ugoiraExtRegex.test('123456.apng'), true)
 
   // Invalid formats
-  assertEquals(ugoiraExtRegex.test('123456.jpg'), false)
-  assertEquals(ugoiraExtRegex.test('123456.png'), false)
-  assertEquals(ugoiraExtRegex.test('notanumber.mp4'), false)
-  assertEquals(ugoiraExtRegex.test('123456'), false)
+  assert.deepEqual(ugoiraExtRegex.test('123456.jpg'), false)
+  assert.deepEqual(ugoiraExtRegex.test('123456.png'), false)
+  assert.deepEqual(ugoiraExtRegex.test('notanumber.mp4'), false)
+  assert.deepEqual(ugoiraExtRegex.test('123456'), false)
 })
 
-Deno.test('ugoira service - ugoiraExts contains all supported extensions', () => {
+test('ugoira service - ugoiraExts contains all supported extensions', () => {
   const expected = ['mp4', 'gif', 'apng', 'webp', 'webm', 'avif']
-  assertEquals(ugoiraExts, expected)
+  assert.deepEqual(ugoiraExts, expected)
 })
 
-Deno.test('ugoira service - convertUgoira throws on invalid ID', async () => {
-  await assertRejects(() => convertUgoira('invalid.mp4'), Error, 'Invalid ugoira extension')
+test('ugoira service - convertUgoira throws on invalid ID', async () => {
+  await assert.rejects(
+    () => convertUgoira('invalid.mp4'),
+    (e: unknown) => e instanceof Error && e.message.includes('Invalid ugoira extension')
+  )
 })
 
-Deno.test('ugoira service - convertUgoira throws on missing ID', async () => {
-  await assertRejects(() => convertUgoira(''), Error, 'Invalid ugoira extension')
+test('ugoira service - convertUgoira throws on missing ID', async () => {
+  await assert.rejects(
+    () => convertUgoira(''),
+    (e: unknown) => e instanceof Error && e.message.includes('Invalid ugoira extension')
+  )
 })
 
-Deno.test('isSafeZipEntry blocks path traversal', () => {
-  assertEquals(isSafeZipEntry('../etc/passwd'), false)
-  assertEquals(isSafeZipEntry('/absolute/path.jpg'), false)
-  assertEquals(isSafeZipEntry('images\\1.jpg'), false)
-  assertEquals(isSafeZipEntry('C:\\windows\\system32'), false)
-  assertEquals(isSafeZipEntry('images/1.jpg'), true)
-  assertEquals(isSafeZipEntry('frames/000123.jpg'), true)
-  assertEquals(isSafeZipEntry('simple.png'), true)
+test('isSafeZipEntry blocks path traversal', () => {
+  assert.deepEqual(isSafeZipEntry('../etc/passwd'), false)
+  assert.deepEqual(isSafeZipEntry('/absolute/path.jpg'), false)
+  assert.deepEqual(isSafeZipEntry('images\\1.jpg'), false)
+  assert.deepEqual(isSafeZipEntry('C:\\windows\\system32'), false)
+  assert.deepEqual(isSafeZipEntry('images/1.jpg'), true)
+  assert.deepEqual(isSafeZipEntry('frames/000123.jpg'), true)
+  assert.deepEqual(isSafeZipEntry('simple.png'), true)
 })
 
-Deno.test('isSafeZipEntry blocks nested traversal and absolute names', () => {
-  assertEquals(isSafeZipEntry('subdir/../../../etc/passwd'), false)
-  assertEquals(isSafeZipEntry('C:/Users/Admin/file.txt'), false)
-  assertEquals(isSafeZipEntry('..'), false)
-  assertEquals(isSafeZipEntry('./safe/file.txt'), true)
+test('isSafeZipEntry blocks nested traversal and absolute names', () => {
+  assert.deepEqual(isSafeZipEntry('subdir/../../../etc/passwd'), false)
+  assert.deepEqual(isSafeZipEntry('C:/Users/Admin/file.txt'), false)
+  assert.deepEqual(isSafeZipEntry('..'), false)
+  assert.deepEqual(isSafeZipEntry('./safe/file.txt'), true)
 })
 
-Deno.test('validateZipEntries rejects malicious zip with traversal entry', async () => {
+test('validateZipEntries rejects malicious zip with traversal entry', async () => {
   // Build a minimal zip in memory containing a traversal entry
-  const tempDir = await Deno.makeTempDir()
+  const tempDir = await makeTempDir()
   const zipPath = join(tempDir, 'malicious.zip')
 
   try {
     // Create a zip file using PowerShell's Compress-Archive or zip command
     // We create a file with a traversal name first, then zip it
     const evilDir = join(tempDir, 'evil_src')
-    await Deno.mkdir(evilDir, { recursive: true })
-    await Deno.writeFile(join(evilDir, 'evil.txt'), new TextEncoder().encode('pwned'))
+    await ensureDirRecursive(evilDir)
+    await writeFile(join(evilDir, 'evil.txt'), new TextEncoder().encode('pwned'))
 
-    if (Deno.build.os === 'windows') {
+    if (platformIsWindows()) {
       // On Windows, create a file named with '..' in a subdir to force traversal entry
       // PowerShell's Compress-Archive won't naturally create traversal entries,
       // so we rely on the direct isSafeZipEntry integration test above.
       // This test validates the check logic path.
       const checkEntry = isSafeZipEntry
-      assertEquals(checkEntry('../evil.txt'), false)
-      assertEquals(checkEntry('subdir/../../evil.txt'), false)
+      assert.deepEqual(checkEntry('../evil.txt'), false)
+      assert.deepEqual(checkEntry('subdir/../../evil.txt'), false)
     } else {
       // On Unix, use zip with a malicious entry name
       const evilName = join(evilDir, '../evil.txt')
-      await Deno.writeFile(evilName, new TextEncoder().encode('pwned'))
+      await writeFile(evilName, new TextEncoder().encode('pwned'))
 
-      const proc = new Deno.Command('zip', {
-        args: ['-j', zipPath, evilName],
-        stdout: 'piped',
-        stderr: 'piped',
-      })
-      const zipResult = await proc.output()
+      const zipResult = await runCmd('zip', ['-j', zipPath, evilName])
 
       if (zipResult.success) {
         // Now try to validate - should throw for traversal
         // We can't call the internal function directly, but we can validate
         // the logic by checking the entry name detection
         const decoder = new TextDecoder()
-        const listProc = new Deno.Command('unzip', {
-          args: ['-l', zipPath],
-          stdout: 'piped',
-          stderr: 'piped',
-        })
-        const listResult = await listProc.output()
+        const listResult = await runCmd('unzip', ['-l', zipPath])
         const listing = decoder.decode(listResult.stdout)
         // The zip should contain a traversal entry
         const hasTraversal = listing.includes('..')
@@ -108,14 +113,14 @@ Deno.test('validateZipEntries rejects malicious zip with traversal entry', async
               }
             }
           }
-          assertEquals(blocked, true, 'Traversal entry should be blocked by isSafeZipEntry')
+          assert.deepEqual(blocked, true, 'Traversal entry should be blocked by isSafeZipEntry')
         }
       }
 
       // Cleanup malicious file
-      await Deno.remove(evilName).catch(() => {})
+      await removeRecursive(evilName).catch(() => {})
     }
   } finally {
-    await Deno.remove(tempDir, { recursive: true }).catch(() => {})
+    await removeRecursive(tempDir).catch(() => {})
   }
 })

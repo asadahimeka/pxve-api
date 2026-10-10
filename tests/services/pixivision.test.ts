@@ -1,5 +1,6 @@
-import { assertEquals, assertExists } from '@std/assert'
 import { load } from 'cheerio'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
 const mockPixivisionHtml = `
 <html>
@@ -25,7 +26,7 @@ const mockPixivisionHtml = `
 </html>
 `
 
-Deno.test('pixivision service - fetchPixivisionList parses articles correctly', () => {
+test('pixivision service - fetchPixivisionList parses articles correctly', () => {
   const $ = load(mockPixivisionHtml)
   const $articles = $('.main-column-container ._article-card')
 
@@ -40,12 +41,12 @@ Deno.test('pixivision service - fetchPixivisionList parses articles correctly', 
     })
     .toArray()
 
-  assertEquals(articles.length, 1)
-  assertEquals(articles[0].id, 123)
-  assertEquals(articles[0].title, 'Test Article')
+  assert.deepEqual(articles.length, 1)
+  assert.deepEqual(articles[0].id, 123)
+  assert.deepEqual(articles[0].title, 'Test Article')
 })
 
-Deno.test('pixivision service - fetchPixivisionList parses ranking items', () => {
+test('pixivision service - fetchPixivisionList parses ranking items', () => {
   const $ = load(mockPixivisionHtml)
   const $rankList = $('.alc__articles-list-group--ranking ._article-summary-card')
 
@@ -60,16 +61,16 @@ Deno.test('pixivision service - fetchPixivisionList parses ranking items', () =>
     })
     .toArray()
 
-  assertEquals(rank.length, 1)
-  assertEquals(rank[0].id, 'rank1')
-  assertEquals(rank[0].title, 'Rank Article')
+  assert.deepEqual(rank.length, 1)
+  assert.deepEqual(rank[0].id, 'rank1')
+  assert.deepEqual(rank[0].title, 'Rank Article')
 })
 
-Deno.test('pixivision service - thumbnail extraction works', () => {
+test('pixivision service - thumbnail extraction works', () => {
   const $ = load(mockPixivisionHtml)
   const $thumbnail = $('.main-column-container ._article-card ._thumbnail').first()
 
   const thumbnail = $thumbnail.css('background-image')?.match(/url\((.*)\)/)?.[1]
 
-  assertEquals(thumbnail, 'https://example.com/thumb.jpg')
+  assert.deepEqual(thumbnail, 'https://example.com/thumb.jpg')
 })

@@ -1,5 +1,6 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 // tests/services/x-media-api.test.ts
-import { assertEquals, assertRejects } from '@std/assert'
 import {
   FEATURES,
   findDict,
@@ -9,7 +10,7 @@ import {
   USER_MEDIA_URL,
   X_TOKEN,
   XClient,
-  XClientTransaction,
+  type XClientTransaction,
 } from '#services/x-media/api.ts'
 
 /** Route-map fetch mock（同 transaction 测试）。 */
@@ -128,7 +129,7 @@ const mediaFirstPage = {
   },
 }
 
-Deno.test('getUserByScreenName - request shape + id parsing', async () => {
+test('getUserByScreenName - request shape + id parsing', async () => {
   const { impl, calls } = mockApi([[USER_BY_SCREEN_NAME_URL, { status: 200, body: userSearchOk }]])
   const seen: { method: string; url: string }[] = []
   const client = new XClient(
@@ -136,52 +137,54 @@ Deno.test('getUserByScreenName - request shape + id parsing', async () => {
     { fetchImpl: impl, transaction: Promise.resolve(stubTx(seen)) },
   )
   const id = await client.getUserIdByScreenName('k_rity')
-  assertEquals(id, '804284210529742848')
-  assertEquals(seen, [{
+  assert.deepEqual(id, '804284210529742848')
+  assert.deepEqual(seen, [{
     method: 'GET',
     url: 'https://x.com/i/api/graphql/IGgvgiOx4QZndDHuD3x9TQ/UserByScreenName',
   }]) // stub 收到的是完整 URL；取 pathname 是真实 XClientTransaction 类内部的事（Task 3 已覆盖）
   const u = new URL(calls[0]!.url)
-  assertEquals(JSON.parse(u.searchParams.get('variables')!), { screen_name: 'k_rity', withSafetyModeUserFields: false })
-  assertEquals(JSON.parse(u.searchParams.get('features')!), USER_FEATURES)
-  assertEquals(JSON.parse(u.searchParams.get('fieldToggles')!), { withAuxiliaryUserLabels: false })
+  assert.deepEqual(JSON.parse(u.searchParams.get('variables')!), { screen_name: 'k_rity', withSafetyModeUserFields: false })
+  assert.deepEqual(JSON.parse(u.searchParams.get('features')!), USER_FEATURES)
+  assert.deepEqual(JSON.parse(u.searchParams.get('fieldToggles')!), { withAuxiliaryUserLabels: false })
   const h = new Headers(calls[0]!.init!.headers)
-  assertEquals(h.get('authorization'), `Bearer ${X_TOKEN}`)
-  assertEquals(h.get('X-Csrf-Token'), 'csrf')
-  assertEquals(h.get('Cookie'), 'auth_token=tok; ct0=csrf')
-  assertEquals(h.get('X-Client-Transaction-Id'), 'TESTTID')
-  assertEquals(h.get('X-Twitter-Auth-Type'), 'OAuth2Session')
+  assert.deepEqual(h.get('authorization'), `Bearer ${X_TOKEN}`)
+  assert.deepEqual(h.get('X-Csrf-Token'), 'csrf')
+  assert.deepEqual(h.get('Cookie'), 'auth_token=tok; ct0=csrf')
+  assert.deepEqual(h.get('X-Client-Transaction-Id'), 'TESTTID')
+  assert.deepEqual(h.get('X-Twitter-Auth-Type'), 'OAuth2Session')
 })
 
-Deno.test('getUserByScreenName - missing user / unavailable', async () => {
+test('getUserByScreenName - missing user / unavailable', async () => {
   const mk = (body: unknown) => {
     const { impl } = mockApi([[USER_BY_SCREEN_NAME_URL, { status: 200, body }]])
     return new XClient({ auth_token: 't', ct0: 'c' }, { fetchImpl: impl, transaction: Promise.resolve(stubTx([])) })
   }
-  await assertRejects(() => mk({ data: {} }).getUserIdByScreenName('x'), Error, 'The user does not exist.')
-  await assertRejects(
+  await assert.rejects(
+    () => mk({ data: {} }).getUserIdByScreenName('x'),
+    (e: unknown) => e instanceof Error && e.message.includes('The user does not exist.')
+  )
+  await assert.rejects(
     () =>
       mk({ data: { user: { result: { __typename: 'UserUnavailable', message: 'Suspended' } } } }).getUserIdByScreenName(
         'x',
       ),
-    Error,
-    'Suspended',
+    (e: unknown) => e instanceof Error && e.message.includes('Suspended')
   )
 })
 
-Deno.test('getUserMediaTimeline - first page parses grid tweets', async () => {
+test('getUserMediaTimeline - first page parses grid tweets', async () => {
   const { impl } = mockApi([[USER_MEDIA_URL, { status: 200, body: mediaFirstPage }]])
   const client = new XClient({ auth_token: 't', ct0: 'c' }, {
     fetchImpl: impl,
     transaction: Promise.resolve(stubTx([])),
   })
   const { tweets, nextCursor, previousCursor } = await client.getUserMediaTimeline('42', 40, null)
-  assertEquals(nextCursor, 'NEXT')
-  assertEquals(previousCursor, 'PREV')
-  assertEquals(tweets.length, 2)
-  assertEquals(tweets[0]!.id, '1001')
-  assertEquals(tweets[0]!.view_count, '123')
-  assertEquals(tweets[0]!.media, [
+  assert.deepEqual(nextCursor, 'NEXT')
+  assert.deepEqual(previousCursor, 'PREV')
+  assert.deepEqual(tweets.length, 2)
+  assert.deepEqual(tweets[0]!.id, '1001')
+  assert.deepEqual(tweets[0]!.view_count, '123')
+  assert.deepEqual(tweets[0]!.media, [
     {
       id: 'm1',
       media_url: 'https://pbs.twimg.com/media/m1.jpg',
@@ -199,11 +202,11 @@ Deno.test('getUserMediaTimeline - first page parses grid tweets', async () => {
       stream_url: 'https://video.twimg.com/m3.mp4',
     },
   ])
-  assertEquals(tweets[1]!.id, '1002')
-  assertEquals(tweets[1]!.text, 'hello')
-  assertEquals(tweets[1]!.full_text, 'long note text')
-  assertEquals(tweets[1]!.view_count, null)
-  assertEquals(tweets[1]!.media[0]!.stream_url, 'https://video.twimg.com/m2.mp4')
+  assert.deepEqual(tweets[1]!.id, '1002')
+  assert.deepEqual(tweets[1]!.text, 'hello')
+  assert.deepEqual(tweets[1]!.full_text, 'long note text')
+  assert.deepEqual(tweets[1]!.view_count, null)
+  assert.deepEqual(tweets[1]!.media[0]!.stream_url, 'https://video.twimg.com/m2.mp4')
 })
 
 const mediaCursorPage = {
@@ -243,19 +246,19 @@ const mediaCursorPage = {
   },
 }
 
-Deno.test('getUserMediaTimeline - cursor page parses moduleItems', async () => {
+test('getUserMediaTimeline - cursor page parses moduleItems', async () => {
   const { impl, calls } = mockApi([[USER_MEDIA_URL, { status: 200, body: mediaCursorPage }]])
   const client = new XClient({ auth_token: 't', ct0: 'c' }, {
     fetchImpl: impl,
     transaction: Promise.resolve(stubTx([])),
   })
   const { tweets, nextCursor, previousCursor } = await client.getUserMediaTimeline('42', 40, 'CUR')
-  assertEquals(nextCursor, 'NEXT2')
-  assertEquals(previousCursor, 'PREV2')
-  assertEquals(tweets.map((t) => t.id), ['2001', '2002']) // conversation 取首条，replies 被忽略（与 Python 脚本输出一致）
-  assertEquals(tweets[0]!.media[0]!.stream_url, 'https://video.twimg.com/m2.mp4')
+  assert.deepEqual(nextCursor, 'NEXT2')
+  assert.deepEqual(previousCursor, 'PREV2')
+  assert.deepEqual(tweets.map((t) => t.id), ['2001', '2002']) // conversation 取首条，replies 被忽略（与 Python 脚本输出一致）
+  assert.deepEqual(tweets[0]!.media[0]!.stream_url, 'https://video.twimg.com/m2.mp4')
   const u = new URL(calls[0]!.url)
-  assertEquals(JSON.parse(u.searchParams.get('variables')!), {
+  assert.deepEqual(JSON.parse(u.searchParams.get('variables')!), {
     userId: '42',
     count: 40,
     includePromotedContent: true,
@@ -264,26 +267,28 @@ Deno.test('getUserMediaTimeline - cursor page parses moduleItems', async () => {
     withV2Timeline: true,
     cursor: 'CUR',
   })
-  assertEquals(JSON.parse(u.searchParams.get('features')!), FEATURES)
+  assert.deepEqual(JSON.parse(u.searchParams.get('features')!), FEATURES)
 })
 
-Deno.test('getUserMediaTimeline - errors surface', async () => {
+test('getUserMediaTimeline - errors surface', async () => {
   const mk = (status: number, body: unknown) => {
     const { impl } = mockApi([[USER_MEDIA_URL, { status, body }]])
     return new XClient({ auth_token: 't', ct0: 'c' }, { fetchImpl: impl, transaction: Promise.resolve(stubTx([])) })
   }
-  await assertRejects(() => mk(429, 'Rate Limit').getUserMediaTimeline('42', 40, null), Error, '429')
-  await assertRejects(
+  await assert.rejects(
+    () => mk(429, 'Rate Limit').getUserMediaTimeline('42', 40, null),
+    (e: unknown) => e instanceof Error && e.message.includes('429')
+  )
+  await assert.rejects(
     () => mk(200, { errors: [{ code: 326, message: 'locked' }] }).getUserMediaTimeline('42', 40, null),
-    Error,
-    'locked',
+    (e: unknown) => e instanceof Error && e.message.includes('locked')
   )
   const empty = await mk(200, { data: {} }).getUserMediaTimeline('42', 40, null)
-  assertEquals(empty, { tweets: [], nextCursor: null, previousCursor: null })
+  assert.deepEqual(empty, { tweets: [], nextCursor: null, previousCursor: null })
 })
 
-Deno.test('tweetFromData / findDict tolerate malformed items', () => {
-  assertEquals(tweetFromData(null), null)
-  assertEquals(tweetFromData({ __typename: 'TweetTombstone' }), null)
-  assertEquals(findDict({ a: [{ result: 1 }] }, 'result', true), [1])
+test('tweetFromData / findDict tolerate malformed items', () => {
+  assert.deepEqual(tweetFromData(null), null)
+  assert.deepEqual(tweetFromData({ __typename: 'TweetTombstone' }), null)
+  assert.deepEqual(findDict({ a: [{ result: 1 }] }, 'result', true), [1])
 })

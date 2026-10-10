@@ -1,9 +1,10 @@
-import { assertEquals, assertRejects } from '@std/assert'
 import { saucenaoSearch } from '../../src/services/saucenao.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('saucenao service - handles string URL input', async () => {
-  const originalEnv = Deno.env.get('SAUCENAO_API_KEY')
-  Deno.env.set('SAUCENAO_API_KEY', 'test-api-key')
+test('saucenao service - handles string URL input', async () => {
+  const originalEnv = process.env['SAUCENAO_API_KEY']
+  process.env['SAUCENAO_API_KEY'] = 'test-api-key'
 
   const originalFetch = globalThis.fetch
   globalThis.fetch = async (_input: RequestInfo | URL): Promise<Response> => {
@@ -12,20 +13,20 @@ Deno.test('saucenao service - handles string URL input', async () => {
 
   try {
     const result = await saucenaoSearch('https://example.com/image.jpg')
-    assertEquals(result.status, 200)
+    assert.deepEqual(result.status, 200)
   } finally {
     globalThis.fetch = originalFetch
     if (originalEnv !== undefined) {
-      Deno.env.set('SAUCENAO_API_KEY', originalEnv)
+      process.env['SAUCENAO_API_KEY'] = originalEnv
     } else {
-      Deno.env.delete('SAUCENAO_API_KEY')
+      delete process.env['SAUCENAO_API_KEY']
     }
   }
 })
 
-Deno.test('saucenao service - handles Blob input', async () => {
-  const originalEnv = Deno.env.get('SAUCENAO_API_KEY')
-  Deno.env.set('SAUCENAO_API_KEY', 'test-api-key')
+test('saucenao service - handles Blob input', async () => {
+  const originalEnv = process.env['SAUCENAO_API_KEY']
+  process.env['SAUCENAO_API_KEY'] = 'test-api-key'
 
   const originalFetch = globalThis.fetch
   globalThis.fetch = async (_input: RequestInfo | URL): Promise<Response> => {
@@ -35,13 +36,13 @@ Deno.test('saucenao service - handles Blob input', async () => {
   try {
     const blob = new Blob(['test image data'], { type: 'image/jpeg' })
     const result = await saucenaoSearch(blob)
-    assertEquals(result.status, 200)
+    assert.deepEqual(result.status, 200)
   } finally {
     globalThis.fetch = originalFetch
     if (originalEnv !== undefined) {
-      Deno.env.set('SAUCENAO_API_KEY', originalEnv)
+      process.env['SAUCENAO_API_KEY'] = originalEnv
     } else {
-      Deno.env.delete('SAUCENAO_API_KEY')
+      delete process.env['SAUCENAO_API_KEY']
     }
   }
 })

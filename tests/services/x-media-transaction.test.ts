@@ -1,5 +1,6 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 // tests/services/x-media-transaction.test.ts
-import { assertEquals, assertRejects, assertThrows } from '@std/assert'
 import { type CheerioAPI, load } from 'cheerio'
 import golden from './x-media/golden.json' with { type: 'json' }
 import {
@@ -32,32 +33,32 @@ const data = golden as unknown as {
   cubic: { curves: number[]; time: number; value: number }[]
 }
 
-Deno.test('roundHalfEven matches Python round()', () => {
-  assertEquals(roundHalfEven(2.5), 2)
-  assertEquals(roundHalfEven(3.5), 4)
-  assertEquals(roundHalfEven(96.5), 96)
-  assertEquals(roundHalfEven(-96.5), -96)
-  assertEquals(roundHalfEven(0.62745, 2), 0.63)
-  assertEquals(roundHalfEven(-0.96078, 2), -0.96)
-  assertEquals(roundHalfEven(0.039215, 2), 0.04)
-  assertEquals(roundHalfEven(2.675, 2), 2.67)
+test('roundHalfEven matches Python round()', () => {
+  assert.deepEqual(roundHalfEven(2.5), 2)
+  assert.deepEqual(roundHalfEven(3.5), 4)
+  assert.deepEqual(roundHalfEven(96.5), 96)
+  assert.deepEqual(roundHalfEven(-96.5), -96)
+  assert.deepEqual(roundHalfEven(0.62745, 2), 0.63)
+  assert.deepEqual(roundHalfEven(-0.96078, 2), -0.96)
+  assert.deepEqual(roundHalfEven(0.039215, 2), 0.04)
+  assert.deepEqual(roundHalfEven(2.675, 2), 2.67)
 })
 
-Deno.test('floatToHex matches Python float_to_hex', () => {
-  assertEquals(floatToHex(1), '1')
+test('floatToHex matches Python float_to_hex', () => {
+  assert.deepEqual(floatToHex(1), '1')
   // fork 用 chr(remainder + 55) → 大写 A-F；全小写是 animate() 里对 `0.` 开头的值做 .lower() 的效果
-  assertEquals(floatToHex(10.25), 'A.4')
-  assertEquals(floatToHex(0.5), '.8')
-  assertEquals(floatToHex(0), '')
-  assertEquals(floatToHex(2748), 'ABC')
+  assert.deepEqual(floatToHex(10.25), 'A.4')
+  assert.deepEqual(floatToHex(0.5), '.8')
+  assert.deepEqual(floatToHex(0), '')
+  assert.deepEqual(floatToHex(2748), 'ABC')
 })
 
-Deno.test('Cubic matches Python golden', () => {
-  for (const c of data.cubic) assertEquals(new Cubic(c.curves).getValue(c.time), c.value)
+test('Cubic matches Python golden', () => {
+  for (const c of data.cubic) assert.deepEqual(new Cubic(c.curves).getValue(c.time), c.value)
 })
 
 for (const [i, g] of data.vectors.entries()) {
-  Deno.test(`golden vector #${i}: get2DArray/animate/getAnimationKey`, () => {
+  test(`golden vector #${i}: get2DArray/animate/getAnimationKey`, () => {
     const html = `<html><head><meta name="twitter-site-verification" content="${g.key}"></head><body>${
       [0, 1, 2, 3].map((n) => `<svg id="loading-x-anim-${n}"><g><path></path><path d="${g.d}"></path></g></svg>`).join(
         '',
@@ -66,17 +67,17 @@ for (const [i, g] of data.vectors.entries()) {
     const $: CheerioAPI = load(html)
     const kb = Uint8Array.from(g.keyBytes)
     const arr = get2DArray(kb, $)
-    assertEquals(arr[kb[g.rowIndex]! % 16], g.frameRow)
-    assertEquals(animate(g.frameRow, g.targetTime), g.animationKey)
-    assertEquals(getAnimationKey(kb, $, g.rowIndex, g.keyByteIndices), g.animationKey)
+    assert.deepEqual(arr[kb[g.rowIndex]! % 16], g.frameRow)
+    assert.deepEqual(animate(g.frameRow, g.targetTime), g.animationKey)
+    assert.deepEqual(getAnimationKey(kb, $, g.rowIndex, g.keyByteIndices), g.animationKey)
   })
   for (const call of g.calls) {
-    Deno.test(`golden vector #${i}: transactionId ${call.method} t=${call.timeNow}`, async () => {
+    test(`golden vector #${i}: transactionId ${call.method} t=${call.timeNow}`, async () => {
       const tid = await computeTransactionId(call.method, call.path, Uint8Array.from(g.keyBytes), g.animationKey, {
         timeNow: call.timeNow,
         randomNum: call.randomNum,
       })
-      assertEquals(tid, call.transactionId)
+      assert.deepEqual(tid, call.transactionId)
     })
   }
 }
@@ -84,28 +85,31 @@ for (const [i, g] of data.vectors.entries()) {
 // ==== request-side (Task 3) ====
 const ONDEMAND_JS = 'function f(a){return (a[2], 16)+(a[12], 16)+(a[14], 16)+(a[7], 16);}'
 
-Deno.test('findOndemandUrl - two-step chunk map (fork strategy)', () => {
+test('findOndemandUrl - two-step chunk map (fork strategy)', () => {
   const body = '...whatever...,123:"ondemand.s",...later...,123:"deadbeef01"...'
-  assertEquals(findOndemandUrl(body), 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.deadbeef01a.js')
+  assert.deepEqual(findOndemandUrl(body), 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.deadbeef01a.js')
 })
 
-Deno.test('findOndemandUrl - inline format fallback (twitscraper strategy)', () => {
+test('findOndemandUrl - inline format fallback (twitscraper strategy)', () => {
   const body = '{"ondemand.s":"cafe1234"}'
-  assertEquals(findOndemandUrl(body), 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.cafe1234a.js')
+  assert.deepEqual(findOndemandUrl(body), 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.cafe1234a.js')
 })
 
-Deno.test('findOndemandUrl - not found', () => {
-  assertEquals(findOndemandUrl('<html>nope</html>'), null)
+test('findOndemandUrl - not found', () => {
+  assert.deepEqual(findOndemandUrl('<html>nope</html>'), null)
 })
 
-Deno.test('parseKeyByteIndices - collects group(2) per match', () => {
+test('parseKeyByteIndices - collects group(2) per match', () => {
   const { rowIndex, keyByteIndices } = parseKeyByteIndices(ONDEMAND_JS)
-  assertEquals(rowIndex, 2)
-  assertEquals(keyByteIndices, [12, 14, 7])
+  assert.deepEqual(rowIndex, 2)
+  assert.deepEqual(keyByteIndices, [12, 14, 7])
 })
 
-Deno.test('parseKeyByteIndices - empty throws', () => {
-  assertThrows(() => parseKeyByteIndices('no indices here'), Error, "Couldn't get KEY_BYTE indices")
+test('parseKeyByteIndices - empty throws', () => {
+  assert.throws(
+    () => parseKeyByteIndices('no indices here'),
+    (e: unknown) => e instanceof Error && e.message.includes("Couldn't get KEY_BYTE indices")
+  )
 })
 
 const g0 = data.vectors[0]!
@@ -133,22 +137,22 @@ const homeHtml = (key: string, d: string, withOndemand: boolean) =>
       .join('')
   }${withOndemand ? '<script>...,123:"ondemand.s",...,123:"deadbeef01",...</script>' : ''}</body></html>`
 
-Deno.test('XClientTransaction.create - full init chain (chunk-map page)', async () => {
+test('XClientTransaction.create - full init chain (chunk-map page)', async () => {
   const { impl, calls } = mockFetch([
     ['https://x.com', homeHtml(g0.key, g0.d, true)],
     [/ondemand\.s/, ONDEMAND_JS],
   ])
   const ct = await XClientTransaction.create({ fetchImpl: impl })
-  assertEquals(calls.length, 2)
-  assertEquals(calls[1]!.url, 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.deadbeef01a.js')
+  assert.deepEqual(calls.length, 2)
+  assert.deepEqual(calls[1]!.url, 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.deadbeef01a.js')
   const tid = await ct.generateTransactionId('GET', 'https://x.com/i/api/graphql/vFPc2LVIu7so2uA_gHQAdg/UserMedia', {
     timeNow: g0.calls[0]!.timeNow,
     randomNum: g0.calls[0]!.randomNum,
   })
-  assertEquals(tid, g0.calls[0]!.transactionId)
+  assert.deepEqual(tid, g0.calls[0]!.transactionId)
 })
 
-Deno.test('XClientTransaction.create - inline-format page fallback', async () => {
+test('XClientTransaction.create - inline-format page fallback', async () => {
   const inlinePage = homeHtml(g0.key, g0.d, false).replace(
     '</body>',
     '<script>{"ondemand.s":"deadbeef01"}</script></body>',
@@ -158,15 +162,15 @@ Deno.test('XClientTransaction.create - inline-format page fallback', async () =>
     [/ondemand\.s/, ONDEMAND_JS],
   ])
   const ct = await XClientTransaction.create({ fetchImpl: impl })
-  assertEquals(calls[1]!.url, 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.deadbeef01a.js')
+  assert.deepEqual(calls[1]!.url, 'https://abs.twimg.com/responsive-web/client-web/ondemand.s.deadbeef01a.js')
   const tid = await ct.generateTransactionId('GET', 'https://x.com/i/api/graphql/vFPc2LVIu7so2uA_gHQAdg/UserMedia', {
     timeNow: g0.calls[0]!.timeNow,
     randomNum: g0.calls[0]!.randomNum,
   })
-  assertEquals(tid, g0.calls[0]!.transactionId)
+  assert.deepEqual(tid, g0.calls[0]!.transactionId)
 })
 
-Deno.test('XClientTransaction.create - follows meta-refresh migration', async () => {
+test('XClientTransaction.create - follows meta-refresh migration', async () => {
   const finalPage = homeHtml(g0.key, g0.d, true)
   const refreshPage =
     '<html><head><meta http-equiv="refresh" content="0; url=https://x.com/x/migrate?tok=ENCD"/></head></html>'
@@ -176,5 +180,5 @@ Deno.test('XClientTransaction.create - follows meta-refresh migration', async ()
     [/ondemand\.s/, ONDEMAND_JS],
   ])
   await XClientTransaction.create({ fetchImpl: impl })
-  assertEquals(calls.some((c) => c.url.includes('/migrate?tok=ENCD')), true)
+  assert.deepEqual(calls.some((c) => c.url.includes('/migrate?tok=ENCD')), true)
 })

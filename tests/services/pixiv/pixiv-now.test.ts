@@ -1,24 +1,25 @@
-import { assertEquals, assertExists, assertRejects } from '@std/assert'
 import { getSessionUserMeta, objectToQueryString } from '../../../src/services/pixiv/pixiv-now.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('pixiv-now - objectToQueryString handles empty params', () => {
+test('pixiv-now - objectToQueryString handles empty params', () => {
   const result = objectToQueryString(undefined)
-  assertEquals(result === '' || result === '?', true)
+  assert.deepEqual(result === '' || result === '?', true)
 })
 
-Deno.test('pixiv-now - objectToQueryString handles query params', () => {
+test('pixiv-now - objectToQueryString handles query params', () => {
   const result = objectToQueryString({ id: '123', type: 'illustration' })
-  assertEquals(result.includes('id=123'), true)
-  assertEquals(result.includes('type=illustration'), true)
+  assert.deepEqual(result.includes('id=123'), true)
+  assert.deepEqual(result.includes('type=illustration'), true)
 })
 
-Deno.test('pixiv-now - objectToQueryString handles array params', () => {
+test('pixiv-now - objectToQueryString handles array params', () => {
   const result = objectToQueryString({ tags: ['tag1', 'tag2'] })
-  assertEquals(result.includes('tags=tag1'), true)
-  assertEquals(result.includes('tags=tag2'), true)
+  assert.deepEqual(result.includes('tags=tag1'), true)
+  assert.deepEqual(result.includes('tags=tag2'), true)
 })
 
-Deno.test('pixiv-now - getSessionUserMeta parses legacy global meta', () => {
+test('pixiv-now - getSessionUserMeta parses legacy global meta', () => {
   const html = `
     <html>
       <head>
@@ -28,12 +29,12 @@ Deno.test('pixiv-now - getSessionUserMeta parses legacy global meta', () => {
   `
 
   const result = getSessionUserMeta(html)
-  assertEquals(result.userData.id, 123)
-  assertEquals(result.userData.name, 'test')
-  assertEquals(result.token, 'abc123')
+  assert.deepEqual(result.userData.id, 123)
+  assert.deepEqual(result.userData.name, 'test')
+  assert.deepEqual(result.token, 'abc123')
 })
 
-Deno.test('pixiv-now - getSessionUserMeta throws on invalid meta', () => {
+test('pixiv-now - getSessionUserMeta throws on invalid meta', () => {
   const html = '<html><head></head><body>no meta</body></html>'
 
   let threw = false
@@ -41,7 +42,7 @@ Deno.test('pixiv-now - getSessionUserMeta throws on invalid meta', () => {
     getSessionUserMeta(html)
   } catch (e) {
     threw = true
-    assertEquals((e as Error).message.includes('未知的'), true)
+    assert.deepEqual((e as Error).message.includes('未知的'), true)
   }
-  assertEquals(threw, true)
+  assert.deepEqual(threw, true)
 })

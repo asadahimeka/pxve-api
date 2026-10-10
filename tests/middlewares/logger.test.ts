@@ -1,8 +1,9 @@
-import { assertEquals, assertStringIncludes } from '@std/assert'
 import { logger } from '../../src/middlewares/logger.ts'
 import { createMockRequest } from '../utils/test-helpers.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('logger middleware - logs requests properly', async () => {
+test('logger middleware - logs requests properly', async () => {
   const logs: string[] = []
   const originalConsoleLog = console.log
 
@@ -34,9 +35,9 @@ Deno.test('logger middleware - logs requests properly', async () => {
 
     console.log = originalConsoleLog
 
-    assertEquals(logs.length, 1)
-    assertStringIncludes(logs[0], 'GET')
-    assertStringIncludes(logs[0], '200')
+    assert.deepEqual(logs.length, 1)
+    assert.ok(logs[0].includes('GET'))
+    assert.ok(logs[0].includes('200'))
   } catch (error) {
     console.log = originalConsoleLog
     throw error

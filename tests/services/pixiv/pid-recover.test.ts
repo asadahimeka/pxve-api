@@ -1,7 +1,8 @@
-import { assertEquals, assertExists } from '@std/assert'
 import { recoverPidImage } from '../../../src/services/pixiv/pid-recover.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('pid-recover service - recoverPidImage returns null when no results', async () => {
+test('pid-recover service - recoverPidImage returns null when no results', async () => {
   const originalFetch = globalThis.fetch
   globalThis.fetch = async (): Promise<Response> => {
     return new Response(JSON.stringify([]), {
@@ -12,13 +13,13 @@ Deno.test('pid-recover service - recoverPidImage returns null when no results', 
 
   try {
     const result = await recoverPidImage('99999999')
-    assertEquals(result, null)
+    assert.deepEqual(result, null)
   } finally {
     globalThis.fetch = originalFetch
   }
 })
 
-Deno.test('pid-recover service - recovers image from danbooru', async () => {
+test('pid-recover service - recovers image from danbooru', async () => {
   const originalFetch = globalThis.fetch
   let callCount = 0
 
@@ -44,13 +45,13 @@ Deno.test('pid-recover service - recovers image from danbooru', async () => {
 
   try {
     const result = await recoverPidImage('12345678')
-    assertExists(result)
+    assert.ok(result !== null && result !== undefined)
   } finally {
     globalThis.fetch = originalFetch
   }
 })
 
-Deno.test('pid-recover service - queries multiple sources', async () => {
+test('pid-recover service - queries multiple sources', async () => {
   const originalFetch = globalThis.fetch
   let callCount = 0
 

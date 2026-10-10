@@ -16,7 +16,7 @@
     "manage-cache": "node --env-file=.env scripts/cache-manage.ts",
     "type-check": "tsc --noEmit",
     "lint": "echo \"no JS linter configured yet\"",
-    "test": "node --test tests/"
+    "test": "node --env-file-if-exists=.env --test tests/"
   },
   "dependencies": {
     "@__dirname/pixiv-web-api": "0.1.4",

@@ -12,23 +12,19 @@ Pxve API is a Deno-based web service that implements Pixiv-related APIs for the 
 
 ```bash
 # Development mode with hot reload
-deno task dev
+pnpm dev
 
 # Production mode
-deno task start
+pnpm start
 
 # Type checking
-deno task type-check
-
-# Linting
-deno task lint
+pnpm type-check
 
 # Cache management utility
-deno task manage-cache
+pnpm manage-cache
 
 # Testing
-deno task test                    # Run all tests
-deno task test:watch             # Run tests in watch mode
+pnpm test                       # Run all tests
 ```
 
 ### Testing
@@ -59,29 +55,26 @@ tests/
 
 ```bash
 # Run all tests
-deno task test
+pnpm test
 
 # Run specific test file
-deno task test tests/lib/request-deduper.test.ts
-
-# Run tests in watch mode for development
-deno task test:watch
+node --env-file-if-exists=.env --test tests/lib/request-deduper.test.ts
 
 # Run tests with coverage (if needed)
-deno test --coverage=coverage/
+node --env-file-if-exists=.env --test --experimental-test-coverage "tests/**/*.test.ts"
 ```
 
 #### Test Environment
 
 - Mock responses are used for external API calls
 - Test utilities are provided in `tests/utils/test-helpers.ts`
-- Tests run with necessary permissions (`--allow-all`)
+- Tests run on `node:test` with assertions from `node:assert/strict` (no permission flags needed)
 
 #### Manual Testing
 
 For manual API testing:
 
-1. Use `deno task dev` to start development server
+1. Use `pnpm dev` to start development server
 2. Test endpoints at http://localhost:3021/docs or http://localhost:3021/swagger
 3. Use interactive Swagger UI for endpoint testing
 
@@ -101,21 +94,20 @@ src/
 ### Import Conventions
 
 ```typescript
-// Use absolute imports with aliases defined in deno.json
+// Use subpath imports defined in package.json `imports`
 import { Hono } from 'hono'
-import { PixivApi } from '@lib/pixiv-api.ts'
+import { PixivApi } from '#lib/pixiv-api.ts'
 import { logger } from './middlewares/logger.ts'
-import { callPixivAction } from '@services/pixiv/action.ts'
+import { callPixivAction } from '#services/pixiv/action.ts'
 ```
 
 ### TypeScript Configuration
 
 - **Strict mode enabled** - All type violations are errors
-- **Path aliases**: `@lib/` → `./src/lib/`, `@services/` → `./src/services/`
-- **No unused variables**: Lint rule excluded (deno.json line 59)
-- **Explicit any allowed**: Lint rule excluded (deno.json line 60)
+- **Path aliases**: `#lib/` → `./src/lib/`, `#services/` → `./src/services/` (via `package.json` `imports` + `tsconfig.json` `paths`)
+- **Erasable TypeScript only** - No enums, namespaces, or parameter properties: Node runs `.ts` via type stripping
 
-### Formatting Rules (deno.json)
+### Formatting Rules (no auto-formatter configured; follow existing files)
 
 - **Line width**: 120 characters
 - **Indentation**: 2 spaces (no tabs)
@@ -313,7 +305,7 @@ const result = await workerPool.addTask({
 
 #### Manual Testing Approach
 
-1. Start development server: `deno task dev`
+1. Start development server: `pnpm dev`
 2. Access Swagger UI: http://localhost:3021/swagger
 3. Use interactive API documentation for testing
 4. Monitor console logs for debugging
@@ -325,7 +317,7 @@ const result = await workerPool.addTask({
 console.log('[DEBUG]:', new Date().toLocaleString('zh'), 'operation', data)
 
 // Use conditional debug logging
-if (Deno.args.includes('--debug')) {
+if (process.argv.includes('--debug')) {
   console.log('[DEBUG]:', 'detailed info')
 }
 ```
@@ -348,10 +340,10 @@ if (Deno.args.includes('--debug')) {
 
 ### Deployment Notes
 
-- **Runtime**: Deno 2.x
+- **Runtime**: Node.js >= 24.10
 - **Framework**: Hono with TypeScript
-- **Process management**: Use `deno task start` for production
+- **Process management**: Use `pnpm start` for production (or `node --env-file=.env src/server.ts`)
 - **Port**: Default 3021, configurable via `PORT` environment variable
 - **Docker**: Use provided Dockerfile for containerization
 
-When making changes, always run `deno task lint` before committing. For comprehensive checks, use `deno task type-check` to ensure type safety.
+When making changes, always run `pnpm type-check` and `pnpm test` before committing.

@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from '@std/assert'
+import assert from 'node:assert/strict'
 
 /**
  * Test utility functions for Pxve API testing
@@ -93,7 +93,7 @@ export function delay(ms: number): Promise<void> {
  * Assert that a response contains expected properties
  */
 export function assertApiResponse(response: TestResponse, expectedStatus: number, expectedFields?: string[]) {
-  assertEquals(response.status, expectedStatus)
+  assert.deepEqual(response.status, expectedStatus)
 
   if (expectedFields && response.status === 200) {
     const jsonData = JSON.parse(response.body)
@@ -112,16 +112,16 @@ export class TestEnvironment {
   private originalEnv: Record<string, string | undefined> = {}
 
   setEnv(key: string, value: string) {
-    this.originalEnv[key] = Deno.env.get(key)
-    Deno.env.set(key, value)
+    this.originalEnv[key] = process.env[key]
+    process.env[key] = value
   }
 
   restoreEnv() {
     for (const [key, value] of Object.entries(this.originalEnv)) {
       if (value === undefined) {
-        Deno.env.delete(key)
+        delete process.env[key]
       } else {
-        Deno.env.set(key, value)
+        process.env[key] = value
       }
     }
     this.originalEnv = {}

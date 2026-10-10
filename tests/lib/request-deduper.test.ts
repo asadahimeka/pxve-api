@@ -1,7 +1,8 @@
-import { assertEquals, assertStringIncludes } from '@std/assert'
 import { RequestDeduper } from '../../src/lib/request-deduper.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('RequestDeduper - deduplicates identical concurrent requests', async () => {
+test('RequestDeduper - deduplicates identical concurrent requests', async () => {
   const deduper = new RequestDeduper()
   let callCount = 0
 
@@ -22,13 +23,13 @@ Deno.test('RequestDeduper - deduplicates identical concurrent requests', async (
   const results = await Promise.all(responses.map(r => r.text()))
 
   // Should only call the function once
-  assertEquals(callCount, 1)
+  assert.deepEqual(callCount, 1)
 
   // All results should be identical
-  results.forEach(result => assertEquals(result, 'result-1'))
+  results.forEach(result => assert.deepEqual(result, 'result-1'))
 })
 
-Deno.test('RequestDeduper - handles different URLs separately', async () => {
+test('RequestDeduper - handles different URLs separately', async () => {
   const deduper = new RequestDeduper()
   const callCounts: Record<string, number> = {}
 
@@ -48,13 +49,13 @@ Deno.test('RequestDeduper - handles different URLs separately', async () => {
 
   const [result1, result2] = await Promise.all([response1.text(), response2.text()])
 
-  assertEquals(callCounts[url1], 1)
-  assertEquals(callCounts[url2], 1)
-  assertStringIncludes(result1, 'result-https://example.com/api/test1')
-  assertStringIncludes(result2, 'result-https://example.com/api/test2')
+  assert.deepEqual(callCounts[url1], 1)
+  assert.deepEqual(callCounts[url2], 1)
+  assert.ok(result1.includes('result-https://example.com/api/test1'))
+  assert.ok(result2.includes('result-https://example.com/api/test2'))
 })
 
-Deno.test('RequestDeduper - handles errors properly', async () => {
+test('RequestDeduper - handles errors properly', async () => {
   const deduper = new RequestDeduper()
   const errorMessage = 'Request failed'
 
@@ -65,13 +66,13 @@ Deno.test('RequestDeduper - handles errors properly', async () => {
   const url = 'https://example.com/api/error'
 
   const response = await deduper.run(url, failingRequest)
-  assertEquals(response.status, 500)
+  assert.deepEqual(response.status, 500)
 
   const result = await response.json()
-  assertEquals(result.error, 'Internal Server Error')
+  assert.deepEqual(result.error, 'Internal Server Error')
 })
 
-Deno.test('RequestDeduper - cleans up completed requests', async () => {
+test('RequestDeduper - cleans up completed requests', async () => {
   const deduper = new RequestDeduper()
 
   const mockRequest = async () => {
@@ -88,5 +89,5 @@ Deno.test('RequestDeduper - cleans up completed requests', async () => {
   // Request should be cleaned up (implementation specific)
   // This is more of an integration test - the key is that it doesn't throw
   const response = await deduper.run(url, mockRequest)
-  assertEquals(await response.text(), 'success')
+  assert.deepEqual(await response.text(), 'success')
 })

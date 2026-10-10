@@ -1,7 +1,8 @@
-import { assertEquals, assertExists } from '@std/assert'
 import { callPixivAction, pixivActionKeys, pixivActionMap } from '../../../src/services/pixiv/action.ts'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
-Deno.test('pixivActionMap - contains expected actions', () => {
+test('pixivActionMap - contains expected actions', () => {
   const expectedActions = [
     'illust',
     'member',
@@ -31,52 +32,52 @@ Deno.test('pixivActionMap - contains expected actions', () => {
     'novel_comments',
   ]
   for (const action of expectedActions) {
-    assertExists(pixivActionMap[action], `Action ${action} should exist`)
+    assert.ok(pixivActionMap[action] !== null && pixivActionMap[action] !== undefined, `Action ${action} should exist`)
   }
 })
 
-Deno.test('pixivActionKeys - returns array of action keys', () => {
-  assertEquals(Array.isArray(pixivActionKeys), true)
-  assertEquals(pixivActionKeys.length > 0, true)
-  assertEquals(pixivActionKeys.includes('illust'), true)
-  assertEquals(pixivActionKeys.includes('member'), true)
+test('pixivActionKeys - returns array of action keys', () => {
+  assert.deepEqual(Array.isArray(pixivActionKeys), true)
+  assert.deepEqual(pixivActionKeys.length > 0, true)
+  assert.deepEqual(pixivActionKeys.includes('illust'), true)
+  assert.deepEqual(pixivActionKeys.includes('member'), true)
 })
 
-Deno.test('pixivActionMap - each action has function and expire', () => {
+test('pixivActionMap - each action has function and expire', () => {
   for (const [key, action] of Object.entries(pixivActionMap)) {
-    assertEquals(Array.isArray(action), true)
+    assert.deepEqual(Array.isArray(action), true)
     const [fn, expire] = action
-    assertEquals(typeof fn, 'function', `Action ${key} should have a function`)
-    assertEquals(typeof expire, 'number', `Action ${key} should have expire time`)
+    assert.deepEqual(typeof fn, 'function', `Action ${key} should have a function`)
+    assert.deepEqual(typeof expire, 'number', `Action ${key} should have expire time`)
   }
 })
 
-Deno.test('pixivActionMap - illust action has correct expire time', () => {
+test('pixivActionMap - illust action has correct expire time', () => {
   const [_, expire] = pixivActionMap.illust
-  assertEquals(expire, 60 * 60 * 24 * 7)
+  assert.deepEqual(expire, 60 * 60 * 24 * 7)
 })
 
-Deno.test('pixivActionMap - member action has correct expire time', () => {
+test('pixivActionMap - member action has correct expire time', () => {
   const [_, expire] = pixivActionMap.member
-  assertEquals(expire, 60 * 60 * 24)
+  assert.deepEqual(expire, 60 * 60 * 24)
 })
 
-Deno.test('pixivActionMap - rank action has correct expire time', () => {
+test('pixivActionMap - rank action has correct expire time', () => {
   const [_, expire] = pixivActionMap.rank
-  assertEquals(expire, 60 * 60 * 24 * 14)
+  assert.deepEqual(expire, 60 * 60 * 24 * 14)
 })
 
-Deno.test('pixivActionMap - search action has correct expire time', () => {
+test('pixivActionMap - search action has correct expire time', () => {
   const [_, expire] = pixivActionMap.search
-  assertEquals(expire, 60 * 60 * 1)
+  assert.deepEqual(expire, 60 * 60 * 1)
 })
 
-Deno.test('callPixivAction - returns null for unknown action', async () => {
+test('callPixivAction - returns null for unknown action', async () => {
   const result = await callPixivAction('unknown_action', {})
-  assertEquals(result, null)
+  assert.deepEqual(result, null)
 })
 
-Deno.test('callPixivAction - returns null for action without validation', async () => {
+test('callPixivAction - returns null for action without validation', async () => {
   const result = await callPixivAction('spotlights', {})
-  assertExists(result)
+  assert.ok(result !== null && result !== undefined)
 })
