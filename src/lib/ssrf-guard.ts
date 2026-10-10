@@ -1,4 +1,4 @@
-import { getCommaEnv, getEnv } from './runtime.ts'
+import { getCommaEnv, getEnv, resolveHost } from './runtime.ts'
 
 const PRIVATE_RE =
   /^(10\.|100\.(6[4-9]|[7-9]\d|1[0-2][0-7])\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.|127\.|0\.0\.0\.0|169\.254\.)/
@@ -165,15 +165,10 @@ async function resolveAndCheck(hostname: string): Promise<string[]> {
     return cached.ips
   }
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), DNS_TIMEOUT_MS)
-
   try {
-    const [aRecords, aaaaRecords] = await Promise.all([
-      Deno.resolveDns(hostname, 'A', { signal: controller.signal }).catch(() => [] as string[]),
-      Deno.resolveDns(hostname, 'AAAA', { signal: controller.signal }).catch(() => [] as string[]),
-    ])
-    const ips = [...aRecords, ...aaaaRecords]
+    // node:dns resolve4/resolve6 silently ignore AbortSignal, so timeout is
+    // enforced inside resolveHost (per-request Resolver + race) instead.
+    const ips = await resolveHost(hostname, { timeoutMs: DNS_TIMEOUT_MS })
     if (ips.length === 0) {
       throw new Error(`DNS resolution returned no records: ${hostname}`)
     }
@@ -185,12 +180,10 @@ async function resolveAndCheck(hostname: string): Promise<string[]> {
     }
     return ips
   } catch (err: unknown) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
+    if (err instanceof Error && /timeout/i.test(err.message)) {
       throw new Error(`DNS resolution timed out: ${hostname}`)
     }
     throw err
-  } finally {
-    clearTimeout(timer)
   }
 }
 

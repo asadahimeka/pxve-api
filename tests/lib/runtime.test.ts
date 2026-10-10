@@ -10,6 +10,7 @@ import {
   platformIsWindows,
   readFile,
   removeRecursive,
+  resolveHost,
   runCmd,
   writeFile,
 } from '#lib/runtime.ts'
@@ -93,4 +94,16 @@ Deno.test('makeTempDir + writeFile + readFile + removeRecursive round-trip', asy
 
 Deno.test('platformIsWindows matches current platform', () => {
   assertEquals(platformIsWindows(), false)
+})
+
+Deno.test('resolveHost resolves localhost to IPs', async () => {
+  const ips = await resolveHost('localhost', { timeoutMs: 5000 })
+  assertEquals(ips.length > 0, true)
+})
+
+Deno.test('resolveHost returns promptly for unresolvable host', async () => {
+  const start = Date.now()
+  const ips = await resolveHost('nonexistent.invalid', { timeoutMs: 3000 })
+  assertEquals(Date.now() - start < 5000, true)
+  assertEquals(Array.isArray(ips), true)
 })

@@ -9,6 +9,7 @@
  */
 
 import { execFile } from 'node:child_process'
+import { Resolver } from 'node:dns/promises'
 import {
   mkdir as fsMkdir,
   mkdtemp as fsMkdtemp,
@@ -100,8 +101,7 @@ export interface CmdResult {
  * Non-zero exit resolves `{success: false}` with captured output; a timeout
  * (or being killed) throws so callers can distinguish hangs from failures.
  */
-export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: number }): Promise<CmdResult> {
-  try {
+export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: number }): Promise<CmdResult> {  try {
     const { stdout, stderr } = await execFileAsync(cmd, args, {
       timeout: opts?.timeoutMs,
       maxBuffer: 16 * 1024 * 1024,
@@ -120,5 +120,46 @@ export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: n
       }
     }
     throw e
+  }
+}
+
+/**
+ * Resolve a hostname to IPv4+IPv6 strings (matches old `Deno.resolveDns`
+ * A/AAAA usage). Each record type fails independently to []; total failure
+ * yields []. A fresh Resolver per call gives native timeout/tries; an outer
+ * race guarantees the caller never hangs past timeoutMs.
+ *
+ * NOTE: node:dns resolve4/resolve6 ignore AbortSignal (silently), so callers
+ * must not pass a signal expecting cancellation — use timeoutMs instead.
+ */
+export async function resolveHost(host: string, opts?: { timeoutMs?: number }): Promise<string[]> {
+  const timeoutMs = opts?.timeoutMs ?? 5000
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      (async () => {
+        const resolver = new Resolver({ timeout: timeoutMs, tries: 2 })
+        try {
+          const [v4, v6] = await Promise.all([
+            resolver.resolve4(host).catch(() => [] as string[]),
+            resolver.resolve6(host).catch(() => [] as string[]),
+          ])
+          return [...v4, ...v6]
+        } finally {
+          // Best-effort cleanup: Deno's Resolver.cancel() throws internally,
+          // the outer race timer is the real hang guarantee.
+          try {
+            resolver.cancel()
+          } catch {
+            // ignore
+          }
+        }
+      })(),
+      new Promise<string[]>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`DNS resolve timeout after ${timeoutMs}ms: ${host}`)), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timer !== undefined) clearTimeout(timer)
   }
 }
