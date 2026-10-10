@@ -8,34 +8,34 @@ sharp.concurrency(1)
 // (parentPort is null outside a worker).
 const port = parentPort
 if (port) {
-port.on('message', async event => {
-  const { inputBuffer, options = {} } = event
+  port.on('message', async event => {
+    const { inputBuffer, options = {} } = event
 
-  try {
-    const webpOpts = { quality: options.quality || 80 }
-    let compressedImage
-    if (options.width && options.height) {
-      const width = Number(options.width)
-      const height = Number(options.height)
-      if (!width || !height) {
-        throw new Error('Invalid width or height')
+    try {
+      const webpOpts = { quality: options.quality || 80 }
+      let compressedImage
+      if (options.width && options.height) {
+        const width = Number(options.width)
+        const height = Number(options.height)
+        if (!width || !height) {
+          throw new Error('Invalid width or height')
+        }
+        compressedImage = await sharp(new Uint8Array(inputBuffer))
+          .resize({
+            width,
+            height,
+            fit: 'inside',
+            withoutEnlargement: true,
+          })
+          .webp(webpOpts)
+          .toBuffer()
+      } else {
+        compressedImage = await sharp(new Uint8Array(inputBuffer)).webp(webpOpts).toBuffer()
       }
-      compressedImage = await sharp(new Uint8Array(inputBuffer))
-        .resize({
-          width,
-          height,
-          fit: 'inside',
-          withoutEnlargement: true,
-        })
-        .webp(webpOpts)
-        .toBuffer()
-    } else {
-      compressedImage = await sharp(new Uint8Array(inputBuffer)).webp(webpOpts).toBuffer()
-    }
 
-    port.postMessage({ status: 'success', data: compressedImage })
-  } catch (error: any) {
-    port.postMessage({ status: 'error', error: error.message })
-  }
-})
+      port.postMessage({ status: 'success', data: compressedImage })
+    } catch (error: any) {
+      port.postMessage({ status: 'error', error: error.message })
+    }
+  })
 }

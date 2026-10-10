@@ -95,6 +95,9 @@ const startBackgroundCleanup = (
       console.error('Error in background cleanup:', error)
     }
   }, cleanupInterval)
+  // Housekeeping must not hold the event loop open on its own (keeps the
+  // process/test runner able to exit; the HTTP server keeps it alive anyway).
+  timerId.unref?.()
   // Return cleanup function
   return () => clearInterval(timerId)
 }
@@ -240,8 +243,11 @@ export const cache = (options: {
     // Return cached response if not expired or not forcing update.
     // (store.match returns null for expired entries and cleans them.)
     if (cached && !shouldBypass) {
-      c.header('X-Cache', 'HIT')
-      return cached
+      // Set the marker on the response we return: a bare `c.header()` is lost
+      // when a middleware returns its own Response (Hono replaces context.res).
+      const hit = new Response(cached.body, cached)
+      hit.headers.set('X-Cache', 'HIT')
+      return hit
     }
 
     // Delete expired or bypassed entry
@@ -273,7 +279,14 @@ export const cache = (options: {
     // Expiration: response header wins, else the maxAge option (as store default).
     const headerMaxAge = parseMaxAge(c.res.headers.get('Cache-Control') || undefined)
 
-    await store.put(key, res, headerMaxAge ?? undefined)
+    // Caching is best-effort: a disk-backed store adds failure modes (EACCES,
+    // ENOSPC, read-only FS) that must never turn a good response into a 500.
+    try {
+      await store.put(key, res, headerMaxAge ?? undefined)
+    } catch (error) {
+      console.error('[cache-middleware]: store.put failed, serving uncached:', error)
+      c.header('X-Cache', 'BYPASS')
+    }
   }
 }
 

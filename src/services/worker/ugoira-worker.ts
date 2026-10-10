@@ -30,22 +30,22 @@ export type UgoiraConvertExt = 'mp4' | 'gif' | 'apng' | 'webp' | 'webm' | 'avif'
 // tests for isSafeZipEntry) see parentPort === null and skip registration.
 const port = parentPort
 if (port) {
-port.on('message', async event => {
-  let { zip, rate, id, ext = 'avif' } = event
+  port.on('message', async event => {
+    let { zip, rate, id, ext = 'avif' } = event
 
-  try {
-    if (!rate) rate = 16
-    if (!zip) {
-      ;({ zip, rate } = await getMetadata(id))
+    try {
+      if (!rate) rate = 16
+      if (!zip) {
+        ;({ zip, rate } = await getMetadata(id))
+      }
+
+      const buf = await downloadAndConvert(zip, rate, id, ext)
+
+      port.postMessage({ status: 'success', data: buf })
+    } catch (error: any) {
+      port.postMessage({ status: 'error', error: error.message })
     }
-
-    const buf = await downloadAndConvert(zip, rate, id, ext)
-
-    port.postMessage({ status: 'success', data: buf })
-  } catch (error: any) {
-    port.postMessage({ status: 'error', error: error.message })
-  }
-})
+  })
 }
 
 async function getMetadata(id: number) {

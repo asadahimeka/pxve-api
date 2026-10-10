@@ -15,10 +15,11 @@ COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm@10 && pnpm install --frozen-lockfile --prod
 
 # Prefer not to run as root.
-RUN chown -R node:node /app
+RUN mkdir -p /app/.cache && chown -R node:node /app
 USER node
 
-# Persistent HTTP file cache (CACHE_DIR defaults to ./.cache/http)
+# Persistent HTTP file cache (CACHE_DIR defaults to ./.cache/http).
+# Create + chown BEFORE VOLUME so a fresh named volume inherits node ownership.
 VOLUME /app/.cache
 
 # These steps will be re-run upon each file change in your working directory:

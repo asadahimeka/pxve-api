@@ -1,4 +1,4 @@
-// src/services/x-media/index.ts — native Deno implementation (no Python subprocess).
+// src/services/x-media/index.ts — native implementation (no Python subprocess).
 // Legacy Python fallback kept at ./fetch_x_media.py for A/B comparison only.
 import { join } from 'node:path'
 import { getEnv } from '#lib/runtime.ts'

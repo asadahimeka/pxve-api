@@ -11,12 +11,11 @@
     "#services/*": "./src/services/*"
   },
   "scripts": {
-    "dev": "node --env-file=.env --watch src/server.ts",
-    "start": "node --env-file=.env src/server.ts",
-    "manage-cache": "node --env-file=.env scripts/cache-manage.ts",
+    "dev": "node --env-file-if-exists=.env --watch src/server.ts --dev",
+    "start": "node --env-file-if-exists=.env src/server.ts",
+    "manage-cache": "node --env-file-if-exists=.env scripts/cache-manage.ts",
     "type-check": "tsc --noEmit",
-    "lint": "echo \"no JS linter configured yet\"",
-    "test": "node --env-file-if-exists=.env --test tests/"
+    "test": "node --env-file-if-exists=.env --test \"tests/**/*.test.ts\""
   },
   "dependencies": {
     "@__dirname/pixiv-web-api": "0.1.4",

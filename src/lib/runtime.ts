@@ -102,7 +102,8 @@ export interface CmdResult {
  * Non-zero exit resolves `{success: false}` with captured output; a timeout
  * (or being killed) throws so callers can distinguish hangs from failures.
  */
-export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: number }): Promise<CmdResult> {  try {
+export async function runCmd(cmd: string, args: string[], opts?: { timeoutMs?: number }): Promise<CmdResult> {
+  try {
     const { stdout, stderr } = await execFileAsync(cmd, args, {
       timeout: opts?.timeoutMs,
       maxBuffer: 16 * 1024 * 1024,

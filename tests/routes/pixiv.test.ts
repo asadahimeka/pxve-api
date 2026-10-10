@@ -12,7 +12,7 @@ test('routes/pixiv - redirect from /pixiv/ to /pixiv/:key', async () => {
   const res = await app.fetch(req)
 
   assert.deepEqual(res.status, 301)
-  assert.ok(res.headers.get('location') || ''.includes('/api/pixiv/tags'))
+  assert.ok((res.headers.get('location') || '').includes('/api/pixiv/tags'))
 })
 
 test('routes/pixiv - valid action key passes validation', async () => {
