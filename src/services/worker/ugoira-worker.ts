@@ -1,10 +1,11 @@
 import { join } from '@std/path'
 import { ensureDir } from '@std/fs'
 import { UA_HEADER } from '#lib/const.ts'
+import { getNumberEnv } from '#lib/runtime.ts'
 import { assertSafeUrl } from '#lib/ssrf-guard.ts'
 import { pixivWebApi } from '../pixiv/web-api.ts'
 
-export const UGOIRA_MAX_ZIP_BYTES = Number(Deno.env.get('UGOIRA_MAX_ZIP_BYTES') ?? 52428800)
+export const UGOIRA_MAX_ZIP_BYTES = getNumberEnv('UGOIRA_MAX_ZIP_BYTES', 52428800)
 
 /**
  * Validate that a zip entry name is safe (no path traversal).

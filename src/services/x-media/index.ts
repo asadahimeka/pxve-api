@@ -1,6 +1,7 @@
 // src/services/x-media/index.ts — native Deno implementation (no Python subprocess).
 // Legacy Python fallback kept at ./fetch_x_media.py for A/B comparison only.
 import { join } from '@std/path'
+import { getEnv } from '#lib/runtime.ts'
 import { XClient } from './api.ts'
 
 const DEFAULT_LIMIT = 40
@@ -13,7 +14,7 @@ const cursorRe = /^[A-Za-z0-9_\-=+/]{1,64}$/
  */
 // deno-lint-ignore require-await
 async function createXClient(): Promise<XClient> {
-  const envJson = Deno.env.get('X_MEDIA_COOKIES')
+  const envJson = getEnv('X_MEDIA_COOKIES')
   if (envJson) {
     let cookies: Record<string, string>
     try {
@@ -29,7 +30,7 @@ async function createXClient(): Promise<XClient> {
     return new XClient(cookies)
   }
   // cookies.json is re-read per request: editing the file takes effect without restart.
-  const path = Deno.env.get('X_MEDIA_COOKIES_FILE') ?? join(import.meta.dirname!, 'cookies.json')
+  const path = getEnv('X_MEDIA_COOKIES_FILE') ?? join(import.meta.dirname!, 'cookies.json')
   return XClient.fromCookiesFile(path)
 }
 

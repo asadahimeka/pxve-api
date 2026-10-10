@@ -1,3 +1,5 @@
+import { getCommaEnv, getEnv } from './runtime.ts'
+
 const PRIVATE_RE =
   /^(10\.|100\.(6[4-9]|[7-9]\d|1[0-2][0-7])\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.|127\.|0\.0\.0\.0|169\.254\.)/
 
@@ -203,28 +205,19 @@ export async function assertSafeUrl(input: string, opts?: { allowPrivate?: boole
   if (METADATA_HOSTS.includes(u.hostname)) {
     throw new Error('blocked metadata')
   }
-  const allow = Deno.env
-    .get('PROXY_ALLOW_DOMAINS')
-    ?.split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
-  if (allow?.length) {
+  const allow = getCommaEnv('PROXY_ALLOW_DOMAINS')
+  if (allow.length) {
     const ok = allow.some(d => (d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d))
     if (!ok) throw new Error(`blocked allowlist: ${u.hostname}`)
   }
-  const block =
-    Deno.env
-      .get('PROXY_BLOCK_DOMAINS')
-      ?.split(',')
-      .map(s => s.trim())
-      .filter(Boolean) ?? []
+  const block = getCommaEnv('PROXY_BLOCK_DOMAINS')
   if (block.some(d => (d.startsWith('*.') ? u.hostname.endsWith(d.slice(1)) : u.hostname === d))) {
     throw new Error(`blocked domain: ${u.hostname}`)
   }
 
   // Built-in IP-echo blocklist (see IP_ECHO_BLOCKLIST) — applies to every
   // assertSafeUrl caller so variant paths like /api/webp/ are covered too.
-  if (Deno.env.get('PROXY_ALLOW_IP_ECHO') != '1' && isIpEchoHost(u.hostname)) {
+  if (getEnv('PROXY_ALLOW_IP_ECHO') != '1' && isIpEchoHost(u.hostname)) {
     throw new Error(`blocked bad request`)
   }
 

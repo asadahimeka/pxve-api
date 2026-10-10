@@ -1,5 +1,6 @@
 import type { Context, MiddlewareHandler } from 'hono'
 import { getConnInfo } from 'hono/deno'
+import { getEnv } from '#lib/runtime.ts'
 
 const STORE_MAX = 5000
 
@@ -28,7 +29,7 @@ function cleanupStore(now: number): void {
 }
 
 function getClientIP(c: Context) {
-  const trustCloudflare = Deno.env.get('TRUST_CLOUDFLARE') === 'true'
+  const trustCloudflare = getEnv('TRUST_CLOUDFLARE') === 'true'
   if (trustCloudflare) {
     return c.req.header('cf-connecting-ip') || 'unknown'
   }
@@ -52,9 +53,9 @@ function getClientIP(c: Context) {
 }
 
 export function rateLimit(opts?: { windowMs?: number; max?: number }): MiddlewareHandler {
-  const windowMs = Number(Deno.env.get('RATE_LIMIT_WINDOW_MS') ?? opts?.windowMs ?? 60000)
-  const max = Number(Deno.env.get('RATE_LIMIT_MAX') ?? opts?.max ?? 120)
-  const enabled = (Deno.env.get('RATE_LIMIT_ENABLED') ?? '1') !== '0'
+  const windowMs = Number(getEnv('RATE_LIMIT_WINDOW_MS') ?? opts?.windowMs ?? 60000)
+  const max = Number(getEnv('RATE_LIMIT_MAX') ?? opts?.max ?? 120)
+  const enabled = (getEnv('RATE_LIMIT_ENABLED') ?? '1') !== '0'
 
   return async (c, next) => {
     if (!enabled) return next()

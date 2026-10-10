@@ -1,4 +1,6 @@
-const configuredQueueMax = Number(Deno.env.get('WORKER_QUEUE_MAX'))
+import { getEnv } from './runtime.ts'
+
+const configuredQueueMax = Number(getEnv('WORKER_QUEUE_MAX'))
 const WORKER_QUEUE_MAX =
   Number.isFinite(configuredQueueMax) && configuredQueueMax > 0 ? Math.floor(configuredQueueMax) : 200
 const WORKER_TIMEOUT = 60_000

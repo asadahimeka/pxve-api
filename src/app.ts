@@ -9,6 +9,7 @@ import { Scalar } from '@scalar/hono-api-reference'
 import { swaggerUI } from '@hono/swagger-ui'
 
 import { RequestDeduper } from '#lib/request-deduper.ts'
+import { getEnv, getNumberEnv, hasFlag } from '#lib/runtime.ts'
 import { toPublicError } from '#lib/sanitize.ts'
 import { optionalAuth } from './middlewares/optional-auth.ts'
 import { logger } from './middlewares/logger.ts'
@@ -34,7 +35,7 @@ app.use(blocker())
 app.get('*', etag())
 app.use(prettyJSON())
 
-if (!Deno.args.includes('--dev') && Deno.env.get('ENABLE_CACHE') == '1') {
+if (!hasFlag('--dev') && getEnv('ENABLE_CACHE') == '1') {
   app.get(
     '*',
     cache({
@@ -42,7 +43,7 @@ if (!Deno.args.includes('--dev') && Deno.env.get('ENABLE_CACHE') == '1') {
       cacheControl: 'max-age=600',
       maxAge: 600 * 1000, // 10min
       maxSizeBytes: 1024 * 1024 * 1024, // 1024MB
-      maxEntries: Number(Deno.env.get('CACHE_MAX_ENTRIES') || '5000'),
+      maxEntries: getNumberEnv('CACHE_MAX_ENTRIES', 5000),
       cleanupInterval: 5 * 60 * 1000, // 5min
     })
   )
@@ -94,7 +95,7 @@ app.notFound(c => c.json({ error: 'Not Found' }, 404))
 app.onError((err, c) => c.json(toPublicError(err), 500))
 
 const deduper = new RequestDeduper()
-const port = Number(Deno.env.get('PORT') ?? 3021)
+const port = getNumberEnv('PORT', 3021)
 Deno.serve({ hostname: '0.0.0.0', port }, (req, ...args) => {
   const skipDeduper = Boolean(
     req.method.toUpperCase() != 'GET' ||

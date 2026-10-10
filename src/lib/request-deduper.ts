@@ -1,4 +1,6 @@
-const DEDUPER_MAX = Number(Deno.env.get('DEDUPER_MAX') ?? 1000)
+import { getNumberEnv } from './runtime.ts'
+
+const DEDUPER_MAX = getNumberEnv('DEDUPER_MAX', 1000)
 
 import { sanitizeError, sanitizeUrl } from '#lib/sanitize.ts'
 
