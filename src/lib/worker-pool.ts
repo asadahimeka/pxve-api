@@ -1,9 +1,19 @@
+import { Worker } from 'node:worker_threads'
+import { pathToFileURL } from 'node:url'
 import { getEnv } from './runtime.ts'
 
 const configuredQueueMax = Number(getEnv('WORKER_QUEUE_MAX'))
 const WORKER_QUEUE_MAX =
   Number.isFinite(configuredQueueMax) && configuredQueueMax > 0 ? Math.floor(configuredQueueMax) : 200
 const WORKER_TIMEOUT = 60_000
+
+function toWorkerLocation(workerUrl: string): URL | string {
+  try {
+    return new URL(workerUrl)
+  } catch {
+    return pathToFileURL(workerUrl)
+  }
+}
 
 interface Task {
   data: any
@@ -39,7 +49,7 @@ export class WorkerPool {
     let worker: Worker
 
     try {
-      worker = new Worker(this.workerUrl, { type: 'module' })
+      worker = new Worker(toWorkerLocation(this.workerUrl))
     } catch (e) {
       this.activeWorkers--
       task.reject(e)
@@ -66,15 +76,23 @@ export class WorkerPool {
       this.processTasks()
     }
 
-    worker.onmessage = (e: MessageEvent) => {
-      finish(() => task.resolve(e.data))
-    }
+    worker.on('message', (data: any) => {
+      finish(() => task.resolve(data))
+    })
 
-    worker.onerror = (e: ErrorEvent) => {
+    worker.on('error', (e: Error) => {
       finish(() => {
         task.reject(new Error(e.message || 'Worker execution failed'))
       })
-    }
+    })
+
+    worker.on('exit', (code: number) => {
+      if (code !== 0) {
+        finish(() => {
+          task.reject(new Error(`Worker exited with code ${code}`))
+        })
+      }
+    })
 
     try {
       worker.postMessage(task.data)
