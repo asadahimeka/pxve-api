@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import { openApi } from 'hono-zod-openapi'
 import z from 'zod'
-// @ts-types="npm:@types/qrcode"
 import QRCode from 'qrcode'
 
 const QRCodeQuerySchema = z.object({

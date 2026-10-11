@@ -18,6 +18,6 @@ function dedupedFetch(req: Request, ...args: any[]) {
   return skipDeduper ? app.fetch(req, ...args) : deduper.run(req.url, async () => await app.fetch(req, ...args))
 }
 
-serve({ fetch: (req, ...args) => dedupedFetch(req, ...args), hostname: '0.0.0.0', port }, info => {
-  console.log(`pxve-api listening on http://0.0.0.0:${info.port}`)
+serve({ hostname: '0.0.0.0', port, fetch: dedupedFetch }, info => {
+  console.log(`pxve-api listening on http://localhost:${info.port}`)
 })

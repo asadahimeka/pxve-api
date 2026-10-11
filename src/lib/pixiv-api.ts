@@ -25,9 +25,7 @@ SOFTWARE.
 */
 
 import AwaitLock from 'await-lock'
-// @ts-types="npm:@types/crypto-js"
 import CryptoJS from 'crypto-js'
-// @ts-types="npm:@types/qs"
 import qs from 'qs'
 import dayjs from 'dayjs'
 import { memdb } from '#lib/db-memory.ts'

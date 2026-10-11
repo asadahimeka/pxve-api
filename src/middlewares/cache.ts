@@ -81,7 +81,6 @@ function getStore(
  * Background task to periodically clean the cache
  */
 const startBackgroundCleanup = (
-  cacheName: string,
   store: HttpCacheStore,
   options: {
     cleanupInterval?: number
@@ -217,9 +216,7 @@ export const cache = (options: {
 
     // Start cleanup timer for this cache name if not already started
     if ((maxAge || maxSizeBytes || maxEntries) && !cleanupTimers.has(cacheName)) {
-      const stopTimer = startBackgroundCleanup(cacheName, store, {
-        cleanupInterval,
-      })
+      const stopTimer = startBackgroundCleanup(store, { cleanupInterval })
       cleanupTimers.set(cacheName, stopTimer)
     }
 
@@ -237,7 +234,6 @@ export const cache = (options: {
       shouldBypass = SENSITIVE_URL_PARAM_RE.test(c.req.url)
     }
 
-    const now = Date.now()
     const cached = await store.match(key)
 
     // Return cached response if not expired or not forcing update.

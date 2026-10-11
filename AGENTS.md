@@ -349,5 +349,3 @@ if (process.argv.includes('--debug')) {
 - **Docker**: Use provided Dockerfile for containerization
 
 When making changes, always run `pnpm test` before committing.
-
-> **Known baseline:** `pnpm type-check` (`tsc --noEmit`) currently exits non-zero with 7 pre-existing errors in files this migration did not change — `@__dirname/pixiv-web-api` ships incomplete type definitions, so `src/routes/pixiv/web-api.ts`, `src/services/pixiv/*`, `src/services/pximg.ts` and `src/services/worker/ugoira-worker.ts` fail to index its members. Treat those 7 as the accepted baseline; any *new* error is a real regression. No JS linter is configured — match the style of neighbouring files.

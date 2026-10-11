@@ -1,4 +1,3 @@
-// @ts-types="npm:@types/qs"
 import { stringify } from 'qs'
 import { parseCookie } from 'cookie'
 import { type CheerioAPI, load } from 'cheerio'

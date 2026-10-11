@@ -9,7 +9,6 @@ import { createOpenApiDocument } from 'hono-zod-openapi'
 import { Scalar } from '@scalar/hono-api-reference'
 import { swaggerUI } from '@hono/swagger-ui'
 
-import { RequestDeduper } from '#lib/request-deduper.ts'
 import { getEnv, getNumberEnv, hasFlag } from '#lib/runtime.ts'
 import { toPublicError } from '#lib/sanitize.ts'
 import { optionalAuth } from './middlewares/optional-auth.ts'
@@ -84,7 +83,7 @@ Partially compatible with HibiAPI.
 
 createOpenApiDocument(
   app,
-  { info: { title: 'Pxve API', version: '1.0.0', description } },
+  { info: { title: 'Pxve API', version: '1.9.2', description } },
   { routeName: '/openapi.json' }
 )
 

@@ -36,6 +36,19 @@ const allowedFuncs = [
   'userTag',
   'userTags',
   'userWorksLatest',
+  'discoveryArtworks',
+  'discoveryArtworksMeta',
+  'discoveryNovels',
+  'discoveryNovelsMeta',
+  'discoveryUsers',
+  'genreNovel',
+  'storiesTagStories',
+  'streetLatest',
+  'streetRecommendTags',
+  'streetSub',
+  'tagsFrequentIllust',
+  'tagsFrequentNovel',
+  'topWatchlist',
 ] as const
 
 export const pixivWebApiRoute = new Hono().get(
@@ -67,14 +80,13 @@ export const pixivWebApiRoute = new Hono().get(
 
     if (!allowedFuncs.includes(func)) return c.notFound()
 
-    const fn = pixivWebApi[func]
-    if (!fn) return c.notFound()
+    const apiFn = pixivWebApi[func] as (...args: any[]) => any
+    if (!apiFn) return c.notFound()
 
     const { args } = c.req.valid('query')
     const funcArgs = args ? JSON.parse(decodeURIComponent(args)) : []
 
-    // @ts-expect-error funcArgs cant typing
-    const data = await fn(...funcArgs)
+    const data = await apiFn(...funcArgs)
 
     return c.json(data, 200, { 'Cache-Control': 'max-age=600' })
   }

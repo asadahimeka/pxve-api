@@ -1,5 +1,6 @@
 # Pxve API
 
+[![Version](https://img.shields.io/badge/Version-1.9.2-blue.svg)](https://github.com/asadahimeka/pxve-api/releases)
 [![Node.js](https://img.shields.io/badge/Node.js-24-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Hono](https://img.shields.io/badge/Hono-E36002.svg?style=flat&logo=Hono&logoColor=white)](https://hono.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
