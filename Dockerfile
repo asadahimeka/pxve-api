@@ -19,8 +19,9 @@ RUN mkdir -p /app/.cache && chown -R node:node /app
 USER node
 
 # Persistent HTTP file cache (CACHE_DIR defaults to ./.cache/http).
-# Create + chown BEFORE VOLUME so a fresh named volume inherits node ownership.
-VOLUME /app/.cache
+# NOTE: do NOT declare VOLUME here — Railway rejects Dockerfile VOLUME
+# during validation. Attach a Railway Volume at /app/.cache via the
+# dashboard instead (locally: `docker run -v pxve-cache:/app/.cache ...`).
 
 # These steps will be re-run upon each file change in your working directory:
 COPY --chown=node:node . .

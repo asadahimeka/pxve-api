@@ -67,9 +67,23 @@ pnpm start
 # 构建镜像
 docker build -t pxve-api .
 
-# 运行容器
+# 运行容器（默认缓存随容器销毁而丢失，服务本身正常）
 docker run -d -p 3021:3021 --env-file .env pxve-api
+
+# 需要持久化文件缓存时显式挂载命名卷
+#（镜像里已不再声明 VOLUME：Railway 会拒绝 Dockerfile VOLUME 写法，
+# 持久化一律改由运行时/平台挂载）：
+docker run -d -p 3021:3021 --env-file .env -v pxve-cache:/app/.cache pxve-api
 ```
+
+各平台持久化对照（都是挂同一个路径 `/app/.cache`，不挂也能跑、只是重启丢缓存）：
+
+| 平台 | 做法 |
+| ---- | ---- |
+| 自部署 Docker | `-v pxve-cache:/app/.cache`（compose 则 `volumes: [pxve-cache:/app/.cache]`） |
+| Railway | Service → Volumes → New Volume，Mount Path 填 `/app/.cache` |
+| Fly.io | `fly volumes create pxve_cache`，`fly.toml` 里 `[[mounts]] destination = "/app/.cache"` |
+| 无持久盘的平台（如 Render 免费档） | 不挂即可；或把 `CACHE_DIR` 指向平台提供的持久路径 |
 
 ## 📝 配置说明
 

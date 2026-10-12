@@ -67,9 +67,24 @@ pnpm start
 # Build image
 docker build -t pxve-api .
 
-# Run container
+# Run container (cache is ephemeral by default; the service itself works fine)
 docker run -d -p 3021:3021 --env-file .env pxve-api
+
+# Persist the file cache with an explicit named volume
+# (the image no longer declares VOLUME: Railway rejects Dockerfile VOLUME,
+# so persistence is always done via runtime/platform mounts):
+docker run -d -p 3021:3021 --env-file .env -v pxve-cache:/app/.cache pxve-api
 ```
+
+Persistence per platform (all mount the same path `/app/.cache`;
+without a mount the service still works, only the cache is lost on restart):
+
+| Platform | How |
+| -------- | --- |
+| Self-hosted Docker | `-v pxve-cache:/app/.cache` (compose: `volumes: [pxve-cache:/app/.cache]`) |
+| Railway | Service → Volumes → New Volume, Mount Path `/app/.cache` |
+| Fly.io | `fly volumes create pxve_cache`, then `[[mounts]] destination = "/app/.cache"` in `fly.toml` |
+| Platforms without persistent disks (e.g. Render free tier) | Skip the mount; or point `CACHE_DIR` at whatever persistent path the platform provides |
 
 ## 📝 Configuration
 
