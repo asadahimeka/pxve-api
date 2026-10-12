@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@__dirname/pixiv-web-api':
-        specifier: 0.1.4
-        version: 0.1.4
       '@hono/node-server':
         specifier: ^2.1.4
         version: 2.1.4(hono@4.13.13)
@@ -83,9 +80,6 @@ importers:
         version: 5.9.3
 
 packages:
-
-  '@__dirname/pixiv-web-api@0.1.4':
-    resolution: {integrity: sha512-VSGcYSGXir4vVUefE8b3bhyVNLWk17eebHqtrjbW5P+YXryF/oL2Raok5LP1Pw3rhGTD5ABONr/08IbUEt4xmw==}
 
   '@emnapi/runtime@1.11.3':
     resolution: {integrity: sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA==}
@@ -924,8 +918,6 @@ packages:
     resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
 
 snapshots:
-
-  '@__dirname/pixiv-web-api@0.1.4': {}
 
   '@emnapi/runtime@1.11.3':
     dependencies:

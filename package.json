@@ -19,7 +19,6 @@
     "manage-cache": "node --env-file-if-exists=.env scripts/cache-manage.ts"
   },
   "dependencies": {
-    "@__dirname/pixiv-web-api": "0.1.4",
     "@hono/node-server": "^2.1.4",
     "@hono/swagger-ui": "0.5.3",
     "@scalar/hono-api-reference": "0.9.34",
