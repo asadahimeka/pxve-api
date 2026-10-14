@@ -34,14 +34,22 @@ function getClientIP(c: Context) {
     return c.req.header('cf-connecting-ip') || 'unknown'
   }
 
-  const realIP = c.req.header('x-real-ip')
-  if (realIP) {
-    return realIP
-  }
+  // 代理头仅在部署于自家代理后时才可信任，否则客户端可伪造以绕过限流
+  const trustProxy = getEnv('TRUST_PROXY') === 'true'
+  if (trustProxy) {
+    const realIP = c.req.header('x-real-ip')
+    if (realIP) {
+      return realIP
+    }
 
-  const xff = c.req.header('x-forwarded-for')
-  if (xff) {
-    return xff.split(',')[0].trim()
+    const xff = c.req.header('x-forwarded-for')
+    if (xff) {
+      // 取最右段（由自家代理追加，客户端无法污染）；最左段可被客户端伪造
+      const rightmost = xff.split(',').pop()?.trim()
+      if (rightmost) {
+        return rightmost
+      }
+    }
   }
 
   try {

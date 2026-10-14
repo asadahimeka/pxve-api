@@ -53,7 +53,12 @@ export async function request({
     },
   }
 
-  if (!isAnon && PIXIV_COOKIE) {
+  // 凭证优先级：x-auth > 客户端自带 cookie > 服务器 cookie（仅匿名只读兜底）
+  if (headers['x-auth']) {
+    config.headers.cookie = headers['x-auth']
+  } else if (cookies.PHPSESSID) {
+    config.headers.cookie = headers.cookie
+  } else if (!isAnon && PIXIV_COOKIE) {
     config.headers.cookie = PIXIV_COOKIE
   }
 
@@ -63,10 +68,6 @@ export async function request({
 
   if (headers['x-csrf-token'] || cookies.CSRFTOKEN) {
     config.headers['x-csrf-token'] = headers['x-csrf-token'] || cookies.CSRFTOKEN
-  }
-
-  if (headers['x-auth']) {
-    config.headers.cookie = headers['x-auth']
   }
 
   const resp = await fetch(reqUrl, config)

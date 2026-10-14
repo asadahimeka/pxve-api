@@ -11,7 +11,7 @@ pixivNowRoute.on(
   '/pixiv-now/http/*',
   openApi({
     description:
-      'Pixiv Web API 代理转发，例如：`/api/pixiv-now/http/ajax/stories/tag_stories?tag=女の子&lang=zh` <br> 需要传 cookie 的话置于 header 里的 `x-auth`',
+      'Pixiv Web API 代理转发，例如：`/api/pixiv-now/http/ajax/stories/tag_stories?tag=女の子&lang=zh` <br> 需要传 cookie 的话置于 header 里的 `x-auth` <br> POST 请求必须携带用户凭证（`x-auth` 头或 `PHPSESSID` cookie），否则返回 401；服务器 cookie 仅用于只读 GET 兜底',
     tags: ['Pixiv', 'PixivNow', 'Proxy'],
     request: {
       param: z.object(),
@@ -34,6 +34,12 @@ pixivNowRoute.on(
     const slug = c.req.path.replace('/api/pixiv-now/http', '')
     if (!slug || !/(^\/ajax|rpc)|(.+\.php$)/i.test(slug)) return
 
+    const token = getCookie(c, 'PHPSESSID') || c.req.header('x-auth')
+    // 写操作必须在用户自己的凭证下执行，禁止回落到服务器 cookie
+    if (c.req.method === 'POST' && !token) {
+      return c.json({ error: 'POST requests require user credentials (x-auth header or PHPSESSID cookie)' }, 401)
+    }
+
     const { data } = await request({
       method: c.req.method,
       path: slug,
@@ -42,7 +48,6 @@ pixivNowRoute.on(
       headers: c.req.header(),
     })
 
-    const token = getCookie(c, 'PHPSESSID') || c.req.header('x-auth')
     return c.json(data, 200, { 'Cache-Control': token ? 'no-store' : 'max-age=3600' })
   }
 )
