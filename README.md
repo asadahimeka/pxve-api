@@ -11,10 +11,6 @@
 
 一个实现了 Pixiv 相关站点的易用化 API 的程序，供 [Pixiv Viewer](https://github.com/asadahimeka/pixiv-viewer) 使用。
 
-Demo: [api.pxve.cc](https://api.pxve.cc)
-
-API 文档：[api.pxve.cc/docs](https://api.pxve.cc/docs)
-
 ## ✨ 特性
 
 - 🎨 **Pixiv API** - 支持 Pixiv App API 和 Web API
